@@ -34,17 +34,6 @@ module.exports = {
           options: {
             babelrc: true,
           },
-          // options: {
-          //   plugins: [
-          //     '@babel/plugin-proposal-object-rest-spread',
-          //     '@babel/plugin-proposal-class-properties',
-          //   ],
-          //   presets: [
-          //     '@babel/preset-env',
-          //     '@babel/preset-flow',
-          //     '@babel/preset-react',
-          //   ],
-          // },
         },
       },
       {
