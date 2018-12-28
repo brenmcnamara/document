@@ -1,0 +1,19 @@
+{
+  "plugins": [
+    "module:@babel/plugin-proposal-class-properties",
+    "module:@babel/plugin-proposal-object-rest-spread"
+  ],
+  "presets": [
+    "module:@babel/preset-env",
+    "module:@babel/preset-react",
+    "module:@babel/preset-flow"
+  ],
+  "env": {
+    "test": {
+      "presets": [
+        ["module:@babel/preset-env", { "targets": { "node": "6.10" } }],
+        "module:@babel/preset-flow"
+      ]
+    }
+  }
+}
