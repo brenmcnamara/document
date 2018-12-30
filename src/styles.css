@@ -1,14 +1,51 @@
 
 :local(.root) {
-  background-color: #F0F0F0;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
+  font-family: 'Lato', Helvetica, sans-serif;
+  letter-spacing: 0.8px;
 }
 
-:local(.content) {
-  background-color: red;
-  flex-grow: 1;
-  position: relative;
+:local(.header) {
+  align-items: center;
+  background-color: #F0F0F0;
+  display: flex;
+  flex-direction: row;
+  height: 50px;
+  padding: 0 16px;
+}
+
+:local(.headerButtonGroup > .headerButton) {
+  margin-right: 12px;
+}
+
+:local(.headerButton) {
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 8px;
+  font-size: 16px;
+}
+
+:local(.headerButton:hover) {
+  background-color: #CCC;
+}
+
+:local(.headerButton.headerButtonSelected) {
+  background-color: #AAA;
+}
+
+:local(.headerButtonGroup) {
+  flex: 1 0 0;
+}
+
+:local(.headerButtonGroup1) {
+  text-align: left;
+}
+
+:local(.headerButtonGroup2) {
+  text-align: center;
+}
+
+:local(.editorContainer) {
+  background-color: #F0F0F0;
+  margin: 20px auto;
+  width: 500px;
 }
