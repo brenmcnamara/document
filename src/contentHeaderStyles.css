@@ -1,0 +1,20 @@
+
+:local(.iconGroup) {
+  display: flex;
+  flex-direction: row;
+  margin-right: 16px;
+}
+
+:local(.iconContainer) {
+  border-radius: 2px;
+  margin-right: 12px;
+  padding: 4px;
+}
+
+:local(.iconContainer > i) {
+  color: #666;
+}
+
+:local(.iconContainer:hover) {
+  background-color: #F0F0F0;
+}

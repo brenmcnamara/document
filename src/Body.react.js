@@ -1,6 +1,6 @@
 import * as React from 'react';
-
-import styles from './styles.css';
+import ContentHeader from './ContentHeader.react';
+import TitleBar from './TitleBar.react';
 
 import { Editor, RichUtils } from 'draft-js';
 
@@ -14,25 +14,32 @@ export type Props = {
 export default class Body extends React.Component<Props> {
   _editorRef: * = React.createRef();
 
-  componentDidMount(): void {
-    this._editorRef.current.focus();
-  }
-
-  componentWillReceiveProps(nextProps: Props): void {
-    if (this.props.editorState !== nextProps.editorState) {
-      this._editorRef.current.focus();
-    }
-  }
+  // componentDidMount(): void {
+  //   this._editorRef.current.focus();
+  // }
+  //
+  // componentWillReceiveProps(nextProps: Props): void {
+  //   if (this.props.editorState !== nextProps.editorState) {
+  //     this._editorRef.current.focus();
+  //   }
+  // }
 
   render() {
     return (
-      <div className={styles.editorContainer}>
-        <Editor
-          editorState={this.props.editorState}
-          handleKeyCommand={this._handleKeyCommand}
-          onChange={this._onChangeEditor}
-          ref={this._editorRef}
-        />
+      <div style={styles.root}>
+        <ContentHeader />
+        <div style={styles.contentContainer}>
+          <TitleBar />
+          <div style={styles.editorContainer}>
+            <Editor
+              editorState={this.props.editorState}
+              handleKeyCommand={this._handleKeyCommand}
+              onChange={this._onChangeEditor}
+              placeholder="Start typing here..."
+              ref={this._editorRef}
+            />
+          </div>
+        </div>
       </div>
     );
   }
@@ -67,3 +74,15 @@ export default class Body extends React.Component<Props> {
     return 'not-handled';
   };
 }
+
+const styles = {
+  editorContainer: {
+    marginTop: '40px',
+  },
+
+  contentContainer: {
+    padding: '24px 40px',
+  },
+
+  root: {},
+};

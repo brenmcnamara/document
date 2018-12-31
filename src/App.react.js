@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Body from './Body.react';
-import Header from './Header.react';
+import AppHeader from './AppHeader.react';
 
 import styles from './styles.css';
 
@@ -17,6 +17,21 @@ type State = {
   +editorState: EditorState,
 };
 
+/**
+ * Colors to explore:
+ *
+ *  - #4e51c0
+ *  - #5247a9
+ *  - #6d51d1
+ *  - #514ed0
+ *
+ * Color palletes:
+ *  - A:
+ *    - #282c58
+ *    - #f1c651
+ *    - #e85e7e
+ */
+
 export default class App extends React.Component<Props, State> {
   state = {
     editorState: EditorState.createEmpty(),
@@ -26,12 +41,12 @@ export default class App extends React.Component<Props, State> {
     const { editorState } = this.state;
     return (
       <div className={styles.root}>
-        <Header
-          editorState={editorState}
+        <AppHeader
+          editorState={this.state.editorState}
           onChangeEditorState={this._onChangeEditorState}
         />
         <Body
-          editorState={editorState}
+          editorState={this.state.editorState}
           onChangeEditorState={this._onChangeEditorState}
         />
       </div>

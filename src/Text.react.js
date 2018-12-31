@@ -2,32 +2,43 @@
 
 import * as React from 'react';
 
-import styles from './styles.css';
-
 export type Props = {
-  children?: *,
+  children: string,
+  size: 'NORMAL' | 'SMALL' | 'LARGE',
 };
 
-export function H1(props: Props) {
-  return (
-    <div style={styles.header1}>{props.children}</div>
-  );
+type DefaultProps = {
+  size: 'NORMAL' | 'SMALL' | 'LARGE',
+};
+
+export default class Text extends React.Component<Props> {
+  static defaultProps: DefaultProps = {
+    size: 'NORMAL',
+  };
+
+  render() {
+    const textStyles = {
+      ...styles.ALL,
+      ...styles[this.props.size],
+    };
+    return <span style={textStyles}>{this.props.children}</span>;
+  }
 }
 
-export function H2(props: Props) {
-  return (
-    <div style={styles.header2}>{props.children}</div>
-  );
-}
+const styles = {
+  ALL: {
+    color: '#444',
+  },
 
-export function H3(props: Props) {
-  return (
-    <div style={styles.header3}>{props.children}</div>
-  );
-}
+  LARGE: {
+    fontSize: '14pt',
+  },
 
-export function P(props: Props) {
-  return (
-    <div style={styles.paragraph}>{props.children}</div>
-  );
-}
+  NORMAL: {
+    fontSize: '10pt',
+  },
+
+  SMALL: {
+    fontSize: '8pt',
+  },
+};
