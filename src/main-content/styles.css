@@ -7,7 +7,6 @@
 :local(.header) {
   display: flex;
   flex-direction: row;
-  padding: 8px 24px 16px 24px;
 }
 
 :local(.editorContainer) {

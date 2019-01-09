@@ -15,7 +15,6 @@
     "@nine-point/foundation": "^1.0.9",
     "@nine-point/typeahead": "^1.0.0",
     "classnames": "^2.2.6",
-    "draft-js": "^0.10.5",
     "history": "^4.7.2",
     "json-stringify-pretty-compact": "^1.2.0",
     "minimist": "^1.2.0",
