@@ -2,40 +2,27 @@
 
 import * as React from 'react';
 import Editor from '../editor/Editor.react';
+import EditorContentUtils from '../editor/EditorContentUtils';
 
 import classnames from 'classnames';
-import memoize from '../memoize';
 
-import { Observable, Subject } from 'rxjs';
+import { of } from 'rxjs';
 
-import type { EditorAction, RawHTML } from '../editor/types';
+import type { EditorAction } from '../editor/EditorActionUtils';
+import type { EditorInput, EditorOutput } from '../editor/Editor.react';
 
 export type Props = {};
 
 export default class TitleBar extends React.Component<Props> {
-  _getTitleInput = memoize(
-    (): rxjs$Subject<EditorAction> => {
-      return new Subject();
-    },
-  );
-
-  _getTitleOutput = memoize(
-    (): rxjs$Observable<RawHTML> => {
-      return Observable.create(() => {});
-    },
-  );
+  _onEditorInputReady = (input: EditorInput): EditorOutput => {
+    return of(EditorContentUtils.createEmptyContent());
+  };
 
   render() {
     return (
-      <div style={styles.root}>
-        <Editor
-          inputSubject={this._getTitleInput()}
-          placeholder="Title..."
-          outputObservable={this._getTitleOutput()}
-        />
+      <div>
+        <Editor onInputReady={this._onEditorInputReady} />
       </div>
     );
   }
 }
-
-const styles = {};

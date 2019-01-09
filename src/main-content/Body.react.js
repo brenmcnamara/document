@@ -3,56 +3,34 @@
 import * as React from 'react';
 import ContentHeader from './ContentHeader.react';
 import Editor from '../editor/Editor.react';
+import EditorContentUtils from '../editor/EditorContentUtils';
 import TitleBar from './TitleBar.react';
 
-import memoize from '../memoize';
+import styles from './styles.css';
 
-import { Observable, Subject } from 'rxjs';
+import { of } from 'rxjs';
 
-import type { EditorAction, RawHTML } from '../editor/types';
+import type { EditorAction } from '../editor/EditorActionUtils';
+import type { EditorInput, EditorOutput } from '../editor/Editor.react';
 
 export type Props = {};
 
 export default class Body extends React.Component<Props> {
-  _onEditorReady = (inputSubject: rxjs$Subject<EditorAction>): void => {
-    console.log('editor ready');
-    inputSubject.subscribe(console.log);
+  _onEditorInputReady = (input: EditorInput): EditorOutput => {
+    return of(EditorContentUtils.createEmptyContent());
   };
-
-  _getEditorInput = memoize((): rxjs$Subject<EditorAction> => {
-    return new Subject();
-  });
-
-  _getEditorOutput = memoize((): rxjs$Observable<RawHTML> => {
-    return Observable.create(() => {});
-  });
 
   render() {
     return (
-      <div style={styles.root}>
+      <div>
         <ContentHeader />
-        <div style={styles.contentContainer}>
+        <div className={styles.contentContainer}>
           <TitleBar />
-          <div style={styles.editorContainer}>
-            <Editor
-              inputSubject={this._getEditorInput()}
-              outputObservable={this._getEditorOutput()}
-            />
+          <div className={styles.editorContainer}>
+            <Editor onInputReady={this._onEditorInputReady} />
           </div>
         </div>
       </div>
     );
   }
 }
-
-const styles = {
-  editorContainer: {
-    marginTop: '40px',
-  },
-
-  contentContainer: {
-    padding: '24px 40px',
-  },
-
-  root: {},
-};

@@ -2,128 +2,127 @@
 
 import * as React from 'react';
 
-import cssStyles from './contentHeaderStyles.css';
-
 import classnames from 'classnames';
+import styles from './styles.css';
 
 export type Props = {};
 
 export default class ContentHeader extends React.Component<Props> {
-  _onClickBold = (): void => {};
-
-  _onClickUnderline = (): void => {};
-
-  _onClickItalic = (): void => {};
-
-  _onClickCode = (): void => {};
-
-  _onClickHighlight = (): void => {};
-
-  _onClickListUnordered = (): void => {};
-
-  _onClickListOrdered = (): void => {};
-
-  _onClickTask = (): void => {};
-
-  _onClickTable = (): void => {};
-
-  _onClickImage = (): void => {};
-
-  _onClickVideo = (): void => {};
-
-  _onClickComment = (): void => {};
-
   render() {
     return (
-      <div style={styles.root}>
-        <div className={cssStyles.iconGroup}>
-          <div className={cssStyles.iconContainer} onClick={this._onClickBold}>
-            <i className={classnames('fas', 'fa-bold')} style={styles.icon} />
-          </div>
-          <div
-            className={cssStyles.iconContainer}
-            onClick={this._onClickUnderline}>
+      <div className={styles.contentHeaderRoot}>
+        <div className={styles.contentHeaderIconGroup}>
+          <div className={styles.contentHeaderIconContainer}>
             <i
-              className={classnames('fas', 'fa-underline')}
-              style={styles.icon}
+              className={classnames('fas', 'fa-bold', styles.contentHeaderIcon)}
             />
           </div>
-          <div
-            className={cssStyles.iconContainer}
-            onClick={this._onClickItalic}>
-            <i className={classnames('fas', 'fa-italic')} style={styles.icon} />
-          </div>
-          <div className={cssStyles.iconContainer} onClick={this._onClickCode}>
-            <i className={classnames('fas', 'fa-code')} style={styles.icon} />
-          </div>
-          <div
-            className={cssStyles.iconContainer}
-            onClick={this._onClickHighlight}>
+          <div className={styles.contentHeaderIconContainer}>
             <i
-              className={classnames('fas', 'fa-highlighter')}
-              style={styles.icon}
+              className={classnames(
+                'fas',
+                'fa-underline',
+                styles.contentHeaderIcon,
+              )}
+            />
+          </div>
+          <div className={styles.contentHeaderIconContainer}>
+            <i
+              className={classnames(
+                'fas',
+                'fa-italic',
+                styles.contentHeaderIcon,
+              )}
+            />
+          </div>
+          <div className={styles.contentHeaderIconContainer}>
+            <i
+              className={classnames('fas', 'fa-code', styles.contentHeaderIcon)}
+            />
+          </div>
+          <div className={styles.contentHeaderIconContainer}>
+            <i
+              className={classnames(
+                'fas',
+                'fa-highlighter',
+                styles.contentHeaderIcon,
+              )}
             />
           </div>
         </div>
 
-        <div className={cssStyles.iconGroup}>
-          <div
-            className={cssStyles.iconContainer}
-            onClick={this._onClickListUnordered}>
+        <div className={styles.contentHeaderIconGroup}>
+          <div className={styles.contentHeaderIconContainer}>
             <i
-              className={classnames('fas', 'fa-list-ul')}
-              style={styles.icon}
+              className={classnames(
+                'fas',
+                'fa-list-ul',
+                styles.contentHeaderIcon,
+              )}
             />
           </div>
-          <div className={cssStyles.iconContainer}>
+          <div className={styles.contentHeaderIconContainer}>
             <i
-              className={classnames('fas', 'fa-list-ol')}
-              onClick={this._onClickListOrdered}
-              style={styles.icon}
+              className={classnames(
+                'fas',
+                'fa-list-ol',
+                styles.contentHeaderIcon,
+              )}
             />
           </div>
-          <div className={cssStyles.iconContainer} onClick={this._onClickTask}>
+          <div className={styles.contentHeaderIconContainer}>
             <i
-              className={classnames('far', 'fa-check-square')}
-              style={styles.icon}
+              className={classnames(
+                'far',
+                'fa-check-square',
+                styles.contentHeaderIcon,
+              )}
             />
           </div>
-          <div className={cssStyles.iconContainer} onClick={this._onClickTable}>
-            <i className={classnames('fas', 'fa-table')} />
+          <div className={styles.contentHeaderIconContainer}>
+            <i
+              className={classnames(
+                'fas',
+                'fa-table',
+                styles.contentHeaderIcon,
+              )}
+            />
           </div>
         </div>
 
-        <div className={cssStyles.iconGroup}>
-          <div className={cssStyles.iconContainer} onClick={this._onClickImage}>
-            <i className={classnames('far', 'fa-image')} style={styles.icon} />
+        <div className={styles.contentHeaderIconGroup}>
+          <div className={styles.contentHeaderIconContainer}>
+            <i
+              className={classnames(
+                'far',
+                'fa-image',
+                styles.contentHeaderIcon,
+              )}
+            />
           </div>
-          <div className={cssStyles.iconContainer} onClick={this._onClickVideo}>
-            <i className={classnames('fas', 'fa-video')} style={styles.icon} />
+          <div className={styles.contentHeaderIconContainer}>
+            <i
+              className={classnames(
+                'fas',
+                'fa-video',
+                styles.contentHeaderIcon,
+              )}
+            />
           </div>
         </div>
 
-        <div className={cssStyles.iconGroup}>
-          <div
-            className={cssStyles.iconContainer}
-            onClick={this._onClickComment}>
-            <i className={classnames('far', 'fa-comment')} />
+        <div className={styles.contentHeaderIconGroup}>
+          <div className={styles.contentHeaderIconContainer}>
+            <i
+              className={classnames(
+                'far',
+                'fa-comment',
+                styles.contentHeaderIcon,
+              )}
+            />
           </div>
         </div>
       </div>
     );
   }
 }
-
-const styles = {
-  icon: {
-    fontSize: '10pt',
-  },
-
-  root: {
-    borderBottom: 'solid #CCC 1px',
-    display: 'flex',
-    flexDirection: 'row',
-    margin: '8px 16px 0 16px',
-    paddingBottom: '8px',
-  },
-};
