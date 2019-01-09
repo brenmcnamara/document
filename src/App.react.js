@@ -1,5 +1,3 @@
-/* @flow */
-
 import * as React from 'react';
 import Body from './Body.react';
 import AppHeader from './AppHeader.react';

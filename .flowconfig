@@ -1,6 +1,6 @@
 [ignore]
 dist/
-node_modules/draft-js
+.*/node_modules/draft-js
 
 [include]
 
