@@ -75,6 +75,12 @@ export default class TreeAlgos<TNode> {
     return false;
   }
 
+  /**
+   * Create an iterable object for iterating through the descendants of a node
+   * using an infix depth-first-search.
+   *
+   * @param { TNode } root - The root node to start the depth first search
+   */
   static dfsInfixIterable(root: TNode): Iterable<TNode> {
     return {
       [Symbol.iterator]: () => {
