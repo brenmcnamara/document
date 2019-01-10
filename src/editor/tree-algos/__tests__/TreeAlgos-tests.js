@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 import TreeAlgos from '../TreeAlgos';
 
 class AlgosWithoutParentRef extends TreeAlgos {
@@ -107,7 +109,52 @@ test('containsNode is true if the parent and child nodes are the same', () => {
   expect(AlgosWithoutParentRef.containsNode(root, root)).toBe(true);
 });
 
-test('pathToRoot returns an iterable to the root of the tree', () => {
+test('pathToChild returns an iterable that can go from the root to a descendant', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(child1);
+
+  const path1 = Array.from(AlgosWithParentRef.pathToChild(root, child2));
+  const path2 = Array.from(AlgosWithoutParentRef.pathToChild(root, child2));
+
+  expect(path1).toEqual([root, child1, child2]);
+  expect(path2).toEqual([root, child1, child2]);
+});
+
+test('pathToChild from a node to itself returns an iterable of 1 node', () => {
+  const root = createNode('root').withParent(null);
+
+  const path1 = Array.from(AlgosWithParentRef.pathToChild(root, root));
+  const path2 = Array.from(AlgosWithoutParentRef.pathToChild(root, root));
+
+  expect(path1).toEqual([root]);
+  expect(path2).toEqual([root]);
+});
+
+test('pathToChild throws error when trying to find a path between 2 disconnected nodes', () => {
+  const root1 = createNode('root1').withParent(null);
+  const root2 = createNode('root2').withParent(null);
+
+  expect(() =>
+    Array.from(AlgosWithParentRef.pathToChild(root1, root2)),
+  ).toThrow();
+  expect(() =>
+    Array.from(AlgosWithoutParentRef.pathToChild(root1, root2)),
+  ).toThrow();
+});
+
+test('pathToChild throws error when trying to find a path from nodes that do not have direct path', () => {
+  const root = createNode('root').withParent(null);
+  const child = createNode('child').withParent(root);
+  expect(() =>
+    Array.from(AlgosWithParentRef.pathToChild(child, root)),
+  ).toThrow();
+  expect(() =>
+    Array.from(AlgosWithoutParentRef.pathToChild(child, root)),
+  ).toThrow();
+});
+
+test('pathToParent returns an iterable to the root of the tree', () => {
   const root = createNode('root').withParent(null);
   const child1 = createNode('child1').withParent(root);
   const child2 = createNode('child2').withParent(child1);
@@ -145,7 +192,6 @@ test('leastCommonAncestor of a sub-tree and the root is the root', () => {
 
   expect(AlgosWithParentRef.leastCommonAncestor(child2, root)).toBe(root);
   expect(AlgosWithParentRef.leastCommonAncestor(root, child2)).toBe(root);
-
 });
 
 test('leastCommonAncestor of two sibling nodes is their parent', () => {

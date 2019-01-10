@@ -1,5 +1,7 @@
 /* @flow */
 
+import nullthrows from 'nullthrows';
+
 type Iterable<T> = {
   @@iterator(): Iterator<T>,
 };
@@ -116,6 +118,52 @@ export default class TreeAlgos<TNode> {
   }
 
   /**
+   * Create an iterable object that starts from the first node and iterates
+   * to the last node.
+   *
+   * @throws { Error } If there is no path from the first to the second node.
+   *
+   * @param { TNode } fromNode - The node at the start of the path
+   *
+   * @param { TNode } toNode - The node at the end of the path
+   */
+  static pathToChild(fromNode: TNode, toNode: TNode): Iterable<TNode> {
+    const iterator = () => {
+      let stack;
+
+      if (this.parentNode(toNode) === '__NOT_IMPLEMENTED__') {
+        stack = this._pathToChildUsingChildNodes(fromNode, toNode).reverse();
+      } else {
+        stack = [];
+        // Can use the parent node for a quicker iteration algo.
+        let foundFromNode = false;
+        for (let node of this.pathToParent(toNode)) {
+          stack.push(node);
+          if (node === fromNode) {
+            foundFromNode = true;
+            break;
+          }
+        }
+
+        if (!foundFromNode) {
+          throw Error('Could not find path between nodes');
+        }
+      }
+
+      return {
+        next: () => {
+          if (stack.length === 0) {
+            return { done: true };
+          }
+          return { done: false, value: stack.pop() };
+        },
+      };
+    };
+
+    return { [Symbol.iterator]: iterator };
+  }
+
+  /**
    * Create an iterable object that starts from the original node and walks
    * up the tree to the parent node.
    *
@@ -148,24 +196,64 @@ export default class TreeAlgos<TNode> {
    * @param { TNode } root - The root node to start the depth first search
    */
   static dfsInfixIterable(root: TNode): Iterable<TNode> {
-    return {
-      [Symbol.iterator]: () => {
-        const stack = [root];
-        return {
-          next: () => {
-            if (stack.length === 0) {
-              return { done: true };
-            }
-            const node = stack.pop();
-            stack.push.apply(
-              stack,
-              Array.from(this.childNodes(node)).reverse(),
-            );
-            return { done: false, value: node };
-          },
-        };
-      },
+    const iterator = () => {
+      const stack = [root];
+      return {
+        next: () => {
+          if (stack.length === 0) {
+            return { done: true };
+          }
+          const node = stack.pop();
+          stack.push.apply(stack, Array.from(this.childNodes(node)).reverse());
+          return { done: false, value: node };
+        },
+      };
     };
+
+    return { [Symbol.iterator]: iterator };
+  }
+
+  static _pathToChildUsingChildNodes(
+    fromNode: TNode,
+    toNode: TNode,
+  ): Array<TNode> {
+    // NOTE: Need to create a mapping from child to parent, but we cannot make
+    // the assumption that nodes can be hashed, therefore we can't use any
+    // key-value storage. Instead, we will keep a list of node pairs. This
+    // solution is sub-optimal, but it is the cost of not having parent
+    // references for nodes.
+    let childToParentPairs: Array<[TNode, TNode]> = [];
+
+    let foundToNode = false;
+    for (let node of this.dfsInfixIterable(fromNode)) {
+      // NOTE: Because we are doing an infix depth-first search, we can assume
+      // that a node's ancestors have been visited before the node has been
+      // visited. This is an important semantic detail of this loop. Once we
+      // break out of this loop, we need to walk up the parents.
+      if (node === toNode) {
+        foundToNode = true;
+        break;
+      }
+
+      for (let childNode of this.childNodes(node)) {
+        childToParentPairs.push([childNode, node]);
+      }
+    }
+
+    if (!foundToNode) {
+      throw Error('Could not find path between nodes');
+    }
+
+    const path = [toNode];
+
+    while (path[0] !== fromNode) {
+      const parent = nullthrows(
+        childToParentPairs.find(pair => pair[0] === path[0]),
+      )[1];
+      path.unshift(parent);
+    }
+
+    return path;
   }
 }
 
