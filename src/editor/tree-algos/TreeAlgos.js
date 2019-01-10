@@ -25,11 +25,21 @@ export default class TreeAlgos<TNode> {
   /**
    * An abstract method for defining how to query a node for its immediate
    * parent. This method may optionally be implemented.
+   *
+   * @param { TNode } node - The tree node
    */
   static parentNode(node: TNode): OptionalImpl<TNode | null> {
     return '__NOT_IMPLEMENTED__';
   }
 
+  /**
+   * Find the first node in the tree that matches the predicate. Returns null
+   * if no node matches the predicate.
+   *
+   * @param { TNode } root - The root node of the tree to start the search
+   *
+   * @param { (TNode) => boolean } - The predicate function to determine a match
+   */
   static find(root: TNode, predicate: TNode => boolean): TNode | null {
     for (let node of this.dfsInfixIterable(root)) {
       if (predicate(node)) {
@@ -73,6 +83,62 @@ export default class TreeAlgos<TNode> {
       node = unimplThrows(this.parentNode(node));
     }
     return false;
+  }
+
+  /**
+   * Find the least common ancesor node of two nodes. Returns null if the two
+   * trees are not in the same tree.
+   *
+   * @throws { Error } If the "parentNode" method is unimplemented.
+   *
+   * @param { TNode } node1 - The first tree node
+   *
+   * @param { TNode } node2 - The second tree node
+   */
+  static leastCommonAncestor(node1: TNode, node2: TNode): TNode | null {
+    if (node1 === node2) {
+      return node1;
+    }
+
+    const node1Path = Array.from(this.pathToParent(node1)).reverse();
+    const node2Path = Array.from(this.pathToParent(node2)).reverse();
+
+    // Iterate down the paths until the nodes no longer have an ancestor in
+    // common.
+    let commonAncestor = null;
+    for (let i = 0; i < Math.min(node1Path.length, node2Path.length); ++i) {
+      if (node1Path[i] !== node2Path[i]) {
+        break;
+      }
+      commonAncestor = node1Path[i];
+    }
+    return commonAncestor;
+  }
+
+  /**
+   * Create an iterable object that starts from the original node and walks
+   * up the tree to the parent node.
+   *
+   * @throws { Error } If the "parentNode" method is unimplemented.
+   *
+   * @param { TNode } node - The node to start the path
+   */
+  static pathToParent(node: TNode): Iterable<TNode> {
+    const iterator = () => {
+      let current: TNode | null = node;
+      return {
+        next: () => {
+          if (!current) {
+            return { done: true };
+          }
+          const value = current;
+          current = unimplThrows(this.parentNode(current));
+          return { done: false, value };
+        },
+      };
+    };
+
+    return { [Symbol.iterator]: iterator };
   }
 
   /**
