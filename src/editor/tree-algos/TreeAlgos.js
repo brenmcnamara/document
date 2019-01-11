@@ -3,10 +3,6 @@
 import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 
-type Iterable<T> = {
-  @@iterator(): Iterator<T>,
-};
-
 type OptionalImpl<T> = T | '__NOT_IMPLEMENTED__';
 
 /**
@@ -41,7 +37,7 @@ export default class TreeAlgos<TNode> {
    * @param { TNode } node - The node to check
    */
   static isLeaf(node: TNode): boolean {
-    const childIter = this.childNodes(node)[Symbol.iterator]();
+    const childIter = IterUtils.iterFromIterable(this.childNodes(node));
     return !IterUtils.first(childIter);
   }
 
@@ -139,7 +135,8 @@ export default class TreeAlgos<TNode> {
    * @param { TNode } toNode - The node at the end of the path
    */
   static pathToChild(fromNode: TNode, toNode: TNode): Iterable<TNode> {
-    const iterator = () => {
+    // $FlowFixMe - This is correct
+    const iteratorFn: () => Iterator<TNode> = () => {
       let stack;
 
       if (this.parentNode(toNode) === '__NOT_IMPLEMENTED__') {
@@ -171,7 +168,7 @@ export default class TreeAlgos<TNode> {
       };
     };
 
-    return { [Symbol.iterator]: iterator };
+    return IterUtils.createIterable(iteratorFn);
   }
 
   /**
@@ -183,7 +180,8 @@ export default class TreeAlgos<TNode> {
    * @param { TNode } node - The node to start the path
    */
   static pathToParent(node: TNode): Iterable<TNode> {
-    const iterator = () => {
+    // $FlowFixMe - This is correct
+    const iteratorFn: () => Iterator<TNode> = () => {
       let current: TNode | null = node;
       return {
         next: () => {
@@ -197,7 +195,7 @@ export default class TreeAlgos<TNode> {
       };
     };
 
-    return { [Symbol.iterator]: iterator };
+    return IterUtils.createIterable(iteratorFn);
   }
 
   /**
@@ -233,7 +231,7 @@ export default class TreeAlgos<TNode> {
     let nodeToExplore = null;
 
     while (parent) {
-      const childIter = this.childNodes(parent)[Symbol.iterator]();
+      const childIter = IterUtils.iterFromIterable(this.childNodes(parent));
       const foundChildNode = IterUtils.iterateTo(childIter, child);
       invariant(
         foundChildNode,
@@ -254,7 +252,9 @@ export default class TreeAlgos<TNode> {
     // We need to find the left-most leaf of the node to explore.
     let isLeaf = false;
     while (nodeToExplore && !isLeaf) {
-      const childIter = this.childNodes(nodeToExplore)[Symbol.iterator]();
+      const childIter = IterUtils.iterFromIterable(
+        this.childNodes(nodeToExplore),
+      );
       const firstChild = IterUtils.first(childIter);
       if (firstChild) {
         nodeToExplore = firstChild;
@@ -263,7 +263,7 @@ export default class TreeAlgos<TNode> {
       }
     }
 
-    return nodeToExplore;
+    return nodeToExplore || null;
   }
 
   /**
@@ -300,7 +300,7 @@ export default class TreeAlgos<TNode> {
     let nodeToExplore = null;
 
     while (parent) {
-      const childIter = this.childNodes(parent)[Symbol.iterator]();
+      const childIter = IterUtils.iterFromIterable(this.childNodes(parent));
 
       let prevChild: ?TNode;
       try {
@@ -327,7 +327,9 @@ export default class TreeAlgos<TNode> {
     // We need to find the right-most leaf of the node to explore.
     let isLeaf = false;
     while (nodeToExplore && !isLeaf) {
-      const childIter = this.childNodes(nodeToExplore)[Symbol.iterator]();
+      const childIter = IterUtils.iterFromIterable(
+        this.childNodes(nodeToExplore),
+      );
       const lastChild = IterUtils.last(childIter);
       if (lastChild) {
         nodeToExplore = lastChild;
@@ -336,7 +338,7 @@ export default class TreeAlgos<TNode> {
       }
     }
 
-    return nodeToExplore;
+    return nodeToExplore || null;
   }
 
   /**
@@ -346,7 +348,8 @@ export default class TreeAlgos<TNode> {
    * @param { TNode } root - The root node to start the depth first search
    */
   static dfsInfixIterable(root: TNode): Iterable<TNode> {
-    const iterator = () => {
+    // $FlowFixMe - This is correct
+    const iteratorFn: () => Iterator<TNode> = () => {
       const stack = [root];
       return {
         next: () => {
@@ -360,7 +363,7 @@ export default class TreeAlgos<TNode> {
       };
     };
 
-    return { [Symbol.iterator]: iterator };
+    return IterUtils.createIterable(iteratorFn);
   }
 
   static _pathToChildUsingChildNodes(
@@ -415,6 +418,16 @@ function unimplThrows<T>(value: OptionalImpl<T>): T {
 }
 
 const IterUtils = {
+  createIterable<T>(iteratorFn: () => Iterator<T>): Iterable<T> {
+    // $FlowFixMe - This is correct
+    return { [Symbol.iterator]: iteratorFn };
+  },
+
+  iterFromIterable<T>(iterable: Iterable<T>): Iterator<T> {
+    // $FlowFixMe - This is correct
+    return iterable[Symbol.iterator]();
+  },
+
   first<T>(iterator: Iterator<T>): ?T {
     const result = iterator.next();
     return result.done ? undefined : result.value;
