@@ -5,6 +5,8 @@ import nullthrows from 'nullthrows';
 
 type OptionalImpl<T> = T | '__NOT_IMPLEMENTED__';
 
+type IndexPath = Iterable<number>;
+
 /**
  * An abstract base class that contains common tree-based algorithms without
  * making assumptions about the structure of the tree and how to traverse ndoes.
@@ -342,6 +344,70 @@ export default class TreeAlgos<TNode> {
   }
 
   /**
+   * Calculates the index path from a node to another.
+   *
+   * @throws { Error } If no path exists to the node
+   *
+   * @param { TNode } fromNode - The node at the start of the path
+   *
+   * @param { TNode } node - The node at the end of the path
+   */
+  static indexPathToNode(fromNode: TNode, toNode: TNode): IndexPath {
+    // $FlowFixMe - Need to look into how to type iterators and iterables
+    const iteratorFn: () => Iterator<number> = () => {
+      let nodes: Array<TNode>;
+
+      if (this.parentNode(fromNode) === '__NOT_IMPLEMENTED__') {
+        nodes = this._pathToChildUsingChildNodes(fromNode, toNode);
+      } else {
+        nodes = this._pathToChildUsingParentNodes(fromNode, toNode);
+      }
+
+      // NOTE: The first node in the list of nodes is the "fromNode". We do
+      // not want to include that in the path of nodes.
+
+      return {
+        next: () => {
+          if (nodes.length <= 1) {
+            return { done: true };
+          }
+          const parent = nodes[0];
+          const node = nodes[1];
+          const childIter = IterUtils.iterFromIterable(this.childNodes(parent));
+          const childIndex = IterUtils.indexOf(childIter, node);
+          invariant(
+            childIndex >= 0,
+            'childNodes() and parentNode() do not agree on structure of tree',
+          );
+          nodes.shift();
+
+          return { done: false, value: childIndex };
+        },
+      };
+    };
+
+    return IterUtils.createIterable(iteratorFn);
+  }
+
+  /**
+   * Get the node at a particular index path.
+   *
+   * @throws { Error } If no node exists at the path.
+   *
+   * @param { TNode } fromNode - The node to start the path
+   *
+   * @param { IndexPath } indexPath - The index path to navigate.
+   */
+  static nodeAtIndexPath(fromNode: TNode, indexPath: IndexPath): TNode {
+    let node = fromNode;
+    for (let index of indexPath) {
+      const childNodesIter = IterUtils.iterFromIterable(this.childNodes(node));
+      node = IterUtils.nth(childNodesIter, index);
+    }
+    return node;
+  }
+
+  /**
    * Create an iterable object for iterating through the descendants of a node
    * using an infix depth-first-search.
    *
@@ -364,6 +430,26 @@ export default class TreeAlgos<TNode> {
     };
 
     return IterUtils.createIterable(iteratorFn);
+  }
+
+  static _pathToChildUsingParentNodes(
+    fromNode: TNode,
+    toNode: TNode,
+  ): Array<TNode> {
+    let nodes = [toNode];
+    let next = unimplThrows(this.parentNode(toNode));
+
+    while (next && nodes[nodes.length - 1] !== fromNode) {
+      nodes.push(next);
+      next = unimplThrows(this.parentNode(next));
+    }
+
+    nodes.reverse();
+
+    if (nodes[0] !== fromNode) {
+      throw Error('Could not find path between nodes');
+    }
+    return nodes;
   }
 
   static _pathToChildUsingChildNodes(
@@ -443,12 +529,35 @@ const IterUtils = {
     return last;
   },
 
+  nth<T>(iterator: Iterator<T>, n: number): T {
+    let result = iterator.next();
+    let i = 0;
+    while (!result.done && i !== n) {
+      result = iterator.next();
+      ++i;
+    }
+    if (result.done) {
+      throw Error(`Iterator out of range: ${n}`);
+    }
+    return result.value;
+  },
+
   iterateTo(iterator: Iterator<any>, item: any): boolean {
     let result = iterator.next();
     while (!result.done && result.value !== item) {
       result = iterator.next();
     }
     return result.value === item;
+  },
+
+  indexOf(iterator: Iterator<any>, item: any): number {
+    let i = 0;
+    let result = iterator.next();
+    while (!result.done && result.value !== item) {
+      result = iterator.next();
+      ++i;
+    }
+    return result.done ? -1 : i;
   },
 
   /**

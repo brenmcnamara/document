@@ -364,3 +364,82 @@ test('prevAdjacentLeaf throws error if using TreeAlgos without a parentNode impl
 
   expect(() => AlgosWithoutParentRef.nextAdjacentLeaf(root)).toThrow();
 });
+
+test('indexPathToNode returns an empty path when navigating from a node to itself', () => {
+  const root = createNode('root').withParent(null);
+
+  const path1 = Array.from(AlgosWithParentRef.indexPathToNode(root, root));
+  expect(path1).toEqual([]);
+
+  const path2 = Array.from(AlgosWithoutParentRef.indexPathToNode(root, root));
+  expect(path2).toEqual([]);
+});
+
+test('indexPathToNode returns a path to a child node', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+  const child1_1 = createNode('child1_1').withParent(child1);
+  const child2_1 = createNode('child2_1').withParent(child2);
+
+  const path1 = Array.from(AlgosWithParentRef.indexPathToNode(root, child2_1));
+  expect(path1).toEqual([1, 0]);
+
+  const path2 = Array.from(AlgosWithParentRef.indexPathToNode(root, child1_1));
+  expect(path2).toEqual([0, 0]);
+
+  const path3 = Array.from(
+    AlgosWithoutParentRef.indexPathToNode(root, child2_1),
+  );
+  expect(path3).toEqual([1, 0]);
+
+  const path4 = Array.from(
+    AlgosWithoutParentRef.indexPathToNode(root, child1_1),
+  );
+  expect(path4).toEqual([0, 0]);
+});
+
+test('indexPathToNode throws error when trying to find the path between disjoint nodes', () => {
+  const root1 = createNode('root1').withParent(null);
+  const root2 = createNode('root2').withParent(null);
+
+  expect(() =>
+    Array.from(AlgosWithParentRef.indexPathToNode(root1, root2)),
+  ).toThrow();
+  expect(() =>
+    Array.from(AlgosWithoutParentRef.indexPathToNode(root1, root2)),
+  ).toThrow();
+});
+
+test('indexPathToNode throws error when trying to find the path from child to parent', () => {
+  const root = createNode('root').withParent(null);
+  const child = createNode('child').withParent(root);
+
+  expect(() =>
+    Array.from(AlgosWithParentRef.indexPathToNode(child, root)),
+  ).toThrow();
+  expect(() =>
+    Array.from(AlgosWithoutParentRef.indexPathToNode(child, root)),
+  ).toThrow();
+});
+
+test('nodeAtIndexPath gets the root node when an empty index path is used', () => {
+  const root = createNode('root').withParent(null);
+  expect(AlgosWithParentRef.nodeAtIndexPath(root, [])).toBe(root);
+});
+
+test('nodeAtIndexPath gets the sub-node at an index path', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+  const child1_1 = createNode('child1_1').withParent(child1);
+  const child2_1 = createNode('child2_1').withParent(child2);
+
+  expect(AlgosWithParentRef.nodeAtIndexPath(root, [0, 0])).toBe(child1_1);
+  expect(AlgosWithParentRef.nodeAtIndexPath(root, [1, 0])).toBe(child2_1);
+});
+
+test('nodeAtIndexPath throws error when passing an invalid index path', () => {
+  const root = createNode('root').withParent(null);
+  expect(() => AlgosWithParentRef.nodeAtIndexPath(root, [0])).toThrow();
+});
