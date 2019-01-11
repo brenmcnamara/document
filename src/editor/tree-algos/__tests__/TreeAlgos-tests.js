@@ -240,3 +240,127 @@ test('leastCommonAncestor throws when parentNode cannot be traversed', () => {
     AlgosWithoutParentRef.leastCommonAncestor(root, child),
   ).toThrow();
 });
+
+test('nextAdjacentLeaf returns the next leaf sibling if one exists', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+
+  expect(AlgosWithParentRef.nextAdjacentLeaf(child1)).toBe(child2);
+});
+
+test('nextAdjacentLeaf returns the next leaf cousin if one exists', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+  const child1_1 = createNode('child1_1').withParent(child1);
+  const child2_1 = createNode('child2_1').withParent(child2);
+
+  expect(AlgosWithParentRef.nextAdjacentLeaf(child1_1)).toBe(child2_1);
+});
+
+test('nextAdjacentLeaf returns a niece / nephew leaf if one exists', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+  const child2_1 = createNode('child2_1').withParent(child2);
+
+  expect(AlgosWithParentRef.nextAdjacentLeaf(child1)).toBe(child2_1);
+});
+
+test('nextAdjacentLeaf returns an aunt / uncle leaf if one exists', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+  const child1_1 = createNode('child1_1').withParent(child1);
+
+  expect(AlgosWithParentRef.nextAdjacentLeaf(child1_1)).toBe(child2);
+});
+
+test('nextAdjacentLeaf returns null if a node has no next adjacent', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+
+  expect(AlgosWithParentRef.nextAdjacentLeaf(child1)).toBe(null);
+});
+
+test('nextAdjacentLeaf returns null for a single node with no parents or children', () => {
+  const root = createNode('root').withParent(null);
+
+  expect(AlgosWithParentRef.nextAdjacentLeaf(root)).toBe(null);
+});
+
+test('nextAdjacentLeaf throws error if querying for the next leaf of a non-leaf node', () => {
+  const child1 = createNode('child1').withChildren([]);
+  const root = createNode('root').withChildren([child1]);
+
+  expect(() => AlgosWithParentRef.nextAdjacentLeaf(root)).toThrow();
+});
+
+test('nextAdjacentLeaf throws error if using TreeAlgos without a parentNode implementation', () => {
+  const root = createNode('root').withParent(null);
+
+  expect(() => AlgosWithoutParentRef.nextAdjacentLeaf(root)).toThrow();
+});
+
+test('prevAdjacentLeaf returns the next leaf sibling if one exists', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+
+  expect(AlgosWithParentRef.prevAdjacentLeaf(child2)).toBe(child1);
+});
+
+test('prevAdjacentLeaf returns the next leaf cousin if one exists', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+  const child1_1 = createNode('child1_1').withParent(child1);
+  const child2_1 = createNode('child2_1').withParent(child2);
+
+  expect(AlgosWithParentRef.prevAdjacentLeaf(child2_1)).toBe(child1_1);
+});
+
+test('prevAdjacentLeaf returns a niece / nephew leaf if one exists', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child1_1 = createNode('child1_1').withParent(child1);
+  const child2 = createNode('child2').withParent(root);
+
+  expect(AlgosWithParentRef.prevAdjacentLeaf(child2)).toBe(child1_1);
+});
+
+test('prevAdjacentLeaf returns an aunt / uncle leaf if one exists', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+  const child2_1 = createNode('child2_1').withParent(child2);
+
+  expect(AlgosWithParentRef.prevAdjacentLeaf(child2_1)).toBe(child1);
+});
+
+test('prevAdjacentLeaf returns null if a node has no next adjacent', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+
+  expect(AlgosWithParentRef.prevAdjacentLeaf(child1)).toBe(null);
+});
+
+test('prevAdjacentLeaf returns null for a single node with no parents or children', () => {
+  const root = createNode('root').withParent(null);
+
+  expect(AlgosWithParentRef.prevAdjacentLeaf(root)).toBe(null);
+});
+
+test('prevAdjacentLeaf throws error if querying for the next leaf of a non-leaf node', () => {
+  const child1 = createNode('child1').withChildren([]);
+  const root = createNode('root').withChildren([child1]);
+
+  expect(() => AlgosWithParentRef.prevAdjacentLeaf(root)).toThrow();
+});
+
+test('prevAdjacentLeaf throws error if using TreeAlgos without a parentNode implementation', () => {
+  const root = createNode('root').withParent(null);
+
+  expect(() => AlgosWithoutParentRef.nextAdjacentLeaf(root)).toThrow();
+});

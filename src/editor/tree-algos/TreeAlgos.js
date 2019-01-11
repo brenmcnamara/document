@@ -1,5 +1,6 @@
 /* @flow */
 
+import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 
 type Iterable<T> = {
@@ -32,6 +33,16 @@ export default class TreeAlgos<TNode> {
    */
   static parentNode(node: TNode): OptionalImpl<TNode | null> {
     return '__NOT_IMPLEMENTED__';
+  }
+
+  /**
+   * Returns true if the node is a leaf node, false otherwise.
+   *
+   * @param { TNode } node - The node to check
+   */
+  static isLeaf(node: TNode): boolean {
+    const childIter = this.childNodes(node)[Symbol.iterator]();
+    return !IterUtils.first(childIter);
   }
 
   /**
@@ -190,6 +201,145 @@ export default class TreeAlgos<TNode> {
   }
 
   /**
+   * Find the next adjacent leaf in the tree. Returns null if a node has no
+   * adjacent leaves. The following are examples of "next adjacent leaf nodes":
+   *
+   *           *
+   *           |
+   *      -----------
+   *      |         |
+   *    -----     -----
+   *    |   |     |   |
+   *   (A) (B)   (C) (D)
+   *
+   * - The next adjacent leaf of (A) is (B)
+   * - The next adjacent leaf of (B) is (C)
+   * - The next adjacent leaf of (D) is (null)
+   *
+   * @throws { Error } If passing in a node that is not a leaf node.
+   *
+   * @throws { Error } If the "parentNode" static method is not implemented.
+   *
+   * @param { TNode } node - The leaf node to check for the next adjacent.
+   */
+  static nextAdjacentLeaf(node: TNode): TNode | null {
+    if (!this.isLeaf(node)) {
+      throw Error('Expecting node to be a leaf node');
+    }
+
+    let parent = unimplThrows(this.parentNode(node));
+    let child = node;
+
+    let nodeToExplore = null;
+
+    while (parent) {
+      const childIter = this.childNodes(parent)[Symbol.iterator]();
+      const foundChildNode = IterUtils.iterateTo(childIter, child);
+      invariant(
+        foundChildNode,
+        'parentNode and childNodes do not agree on structure of tree',
+      );
+      const { done, value } = childIter.next();
+      if (!done) {
+        // Found the desired child node to explore for a next leaf.
+        nodeToExplore = value;
+        break;
+      }
+      // The node has no next sibling. Need to search for the adjacent leaf
+      // at the next parent.
+      child = parent;
+      parent = unimplThrows(this.parentNode(parent));
+    }
+
+    // We need to find the left-most leaf of the node to explore.
+    let isLeaf = false;
+    while (nodeToExplore && !isLeaf) {
+      const childIter = this.childNodes(nodeToExplore)[Symbol.iterator]();
+      const firstChild = IterUtils.first(childIter);
+      if (firstChild) {
+        nodeToExplore = firstChild;
+      } else {
+        isLeaf = true;
+      }
+    }
+
+    return nodeToExplore;
+  }
+
+  /**
+   * Find the previous adjacent leaf in the tree. Returns null if a node has no
+   * adjacent leaves. The following are examples of "previous adjacent leaf
+   * nodes":
+   *
+   *           *
+   *           |
+   *      -----------
+   *      |         |
+   *    -----     -----
+   *    |   |     |   |
+   *   (A) (B)   (C) (D)
+   *
+   * - The previous adjacent leaf of (B) is (A)
+   * - The previous adjacent leaf of (C) is (B)
+   * - The previous adjacent leaf of (A) is (null)
+   *
+   * @throws { Error } If passing in a node that is not a leaf node.
+   *
+   * @throws { Error } If the "parentNode" static method is not implemented.
+   *
+   * @param { TNode } node - The leaf node to check for the previous adjacent.
+   */
+  static prevAdjacentLeaf(node: TNode): TNode | null {
+    if (!this.isLeaf(node)) {
+      throw Error('Expecting node to be a leaf node');
+    }
+
+    let parent = unimplThrows(this.parentNode(node));
+    let child = node;
+
+    let nodeToExplore = null;
+
+    while (parent) {
+      const childIter = this.childNodes(parent)[Symbol.iterator]();
+
+      let prevChild: ?TNode;
+      try {
+        prevChild = IterUtils.prevOf(childIter, child);
+      } catch (_) {
+        invariant(
+          false,
+          'parentNode and childNodes do not agree on structure of tree',
+        );
+      }
+
+      if (prevChild) {
+        // Found the desired child node to explore for a prev leaf.
+        nodeToExplore = prevChild;
+        break;
+      }
+
+      // The node has no next sibling. Need to search for the adjacent leaf
+      // at the next parent.
+      child = parent;
+      parent = unimplThrows(this.parentNode(parent));
+    }
+
+    // We need to find the right-most leaf of the node to explore.
+    let isLeaf = false;
+    while (nodeToExplore && !isLeaf) {
+      const childIter = this.childNodes(nodeToExplore)[Symbol.iterator]();
+      const lastChild = IterUtils.last(childIter);
+      if (lastChild) {
+        nodeToExplore = lastChild;
+      } else {
+        isLeaf = true;
+      }
+    }
+
+    return nodeToExplore;
+  }
+
+  /**
    * Create an iterable object for iterating through the descendants of a node
    * using an infix depth-first-search.
    *
@@ -263,3 +413,47 @@ function unimplThrows<T>(value: OptionalImpl<T>): T {
   }
   return value;
 }
+
+const IterUtils = {
+  first<T>(iterator: Iterator<T>): ?T {
+    const result = iterator.next();
+    return result.done ? undefined : result.value;
+  },
+
+  last<T>(iterator: Iterator<T>): ?T {
+    let result = iterator.next();
+    let last = undefined;
+    while (!result.done) {
+      last = result.value;
+      result = iterator.next();
+    }
+    return last;
+  },
+
+  iterateTo(iterator: Iterator<any>, item: any): boolean {
+    let result = iterator.next();
+    while (!result.done && result.value !== item) {
+      result = iterator.next();
+    }
+    return result.value === item;
+  },
+
+  /**
+   * Returns the previous item to a particular item, or undefined if there is
+   * no previous item.
+   *
+   * @throws { Error } If the previous item does not exist in the list.
+   */
+  prevOf<T>(iterator: Iterator<T>, item: T): ?T {
+    let prev = undefined;
+    let result = iterator.next();
+    while (!result.done && result.value !== item) {
+      prev = result.value;
+      result = iterator.next();
+    }
+    if (result.value === item) {
+      return prev;
+    }
+    throw Error('Could not find item in the iterator');
+  },
+};
