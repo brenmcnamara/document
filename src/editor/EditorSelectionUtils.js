@@ -174,12 +174,12 @@ const EditorSelectionUtils = {
       return selection;
     }
 
-    const { anchorNode, anchorOffset } = _normalizeNodeAndOffset(
+    const { node: anchorNode, offset: anchorOffset } = _normalizeNodeAndOffset(
       selection.anchorNode,
       selection.anchorOffset,
     );
 
-    const { focusNode, focusOffset } = _normalizeNodeAndOffset(
+    const { node: focusNode, offset: focusOffset } = _normalizeNodeAndOffset(
       selection.focusNode,
       selection.focusOffset,
     );
@@ -224,7 +224,7 @@ const EditorSelectionUtils = {
   },
 };
 
-function _normalizedNodeAndOffset(
+function _normalizeNodeAndOffset(
   node: Node,
   offset: number,
 ): { node: Node, offset: number } {
@@ -250,6 +250,7 @@ function _normalizedNodeAndOffset(
       returnOffset = 0;
     }
   }
+  return { node: returnNode, offset: returnOffset };
 }
 
 function _shiftCharNodeAndOffset(

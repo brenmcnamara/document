@@ -48,7 +48,7 @@ export default function setEditorSelection(sel: EditorSelection): void {
   const range = document.createRange();
 
   if (isBackward) {
-    range.setStart();
+    // range.setStart();
   } else {
     range.setStart(sel.anchorNode, sel.anchorOffset);
     range.setEnd(sel.focusNode, sel.focusOffset);

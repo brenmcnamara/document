@@ -6,6 +6,7 @@ import EditorSelectionUtils from './EditorSelectionUtils';
 import Keys from './Keys';
 
 import invariant from 'invariant';
+import nullthrows from 'nullthrows';
 
 import { Observable } from 'rxjs';
 
@@ -13,35 +14,23 @@ import type { EditorAction } from './EditorActionUtils';
 import type { EditorContent } from './EditorContentUtils';
 import type { EditorSelection } from './EditorSelectionUtils';
 
-export type EditorIn = rxjs$Observable<EditorAction>;
-export type EditorOut = rxjs$Observable<EditorContent>;
+export type EditorInput = rxjs$Observable<EditorAction>;
+export type EditorOutput = rxjs$Observable<EditorContent>;
 
 export type Props = {
   className?: string,
-  onInputReady: (input: EditorIn) => EditorOut,
+  onInputReady: (input: EditorInput) => EditorOutput,
+  readOnly?: boolean,
 };
 
 // CORE COMPONENT RENDERED:
 //   - https://github.com/facebook/draft-js/blob/master/src/component/base/DraftEditor.react.js#L365
 
 export default class Editor extends React.Component<Props> {
-  constructor(props: Props) {
-    super(props);
-    // NOTE: The create method does not get called until someone subscribes
-    // to the observable. This means that the observer does not exist until the
-    // observable has a subscriber. For that reason, we cannot assume the
-    // observer exists at any point.
-    this._inputObservable = Observable.create(
-      (observer: rxjs$Observer<EditorAction>) => {
-        this._inputObserver = observer;
-      },
-    );
-  }
-
   _editorContent: EditorContent = EditorContentUtils.createEmptyContent();
   _editorRef: * = React.createRef();
   _input: EditorInput;
-  _inputObserver: EditorIn | null = null;
+  _inputObserver: rxjs$Observer<EditorAction> | null = null;
   _outputSubscription: rxjs$Unsubscribable | null = null;
 
   // ---------------------------------------------------------------------------
@@ -126,27 +115,33 @@ export default class Editor extends React.Component<Props> {
   _onSelect = (event: SyntheticEvent<>): void => {
     const nativeSelection = getSelection();
     if (!nativeSelection) {
-      if (!this._selection) {
-        this._inputObserver &&
-          this._inputObserver.next({
-            selection: null,
-            type: 'SELECTION_CHANGE',
-          });
-        this._selection = null;
-      }
+      this._editorContent = {
+        ...this._editorContent,
+        selection: EditorSelectionUtils.cursorAtStart(this._editorContent.html),
+      };
+
+      this._inputObserver &&
+        this._inputObserver.next({
+          selection: this._editorContent.selection,
+          type: 'CHANGE_SELECTION',
+        });
       return;
     }
 
-    const selection = EditorSelectionUtils.fromNativeSelection(nativeSelection);
+    let selection = EditorSelectionUtils.fromNativeSelection(nativeSelection);
+    if (!selection) {
+      selection = EditorSelectionUtils.cursorAtStart(this._editorContent.html);
+    }
+
     if (
-      this._selection &&
-      EditorSelectionUtils.isEqual(this._selection, selection)
+      EditorSelectionUtils.isEqual(this._editorContent.selection, selection)
     ) {
       return;
     }
 
+    this._editorContent = { ...this._editorContent, selection };
     this._inputObserver &&
-      this._inputObserver.next({ selection, type: 'SELECTION_CHANGE' });
+      this._inputObserver.next({ selection, type: 'CHANGE_SELECTION' });
   };
 
   // ---------------------------------------------------------------------------
@@ -165,7 +160,8 @@ export default class Editor extends React.Component<Props> {
   }
 
   componentDidMount(): void {
-    this._editorRef.current.append(this._editorContent.html);
+    this._setContentUNSAFE(this._editorContent);
+    global.html = this._editorRef.current;
   }
 
   componentWillUnmount(): void {
@@ -222,11 +218,31 @@ export default class Editor extends React.Component<Props> {
       'Expecting no more than 1 child of root editor component',
     );
 
-    if (root.childNodes.length === 0) {
-      root.append(content.html);
-    } else {
-      root.replaceNode(root.childNodes[0], content.html);
-    }
+    this._setContentUNSAFE(content);
+
+    // SET THE SELECTION
     this._editorContent = content;
+  }
+
+  _hasFocus(): boolean {
+    return Boolean(
+      this._editorRef.current &&
+        document.activeElement === this._editorRef.current,
+    );
+  }
+
+  _setContentUNSAFE(content: EditorContent): void {
+    const root = nullthrows(this._editorRef.current);
+
+    // SET THE HTML
+    if (!this._editorContent.html.isEqualNode(content.html)) {
+      if (root.childNodes.length === 0) {
+        root.append(content.html);
+      } else {
+        root.replaceNode(root.childNodes[0], content.html);
+      }
+    }
+
+    // SET THE SELECTION
   }
 }
