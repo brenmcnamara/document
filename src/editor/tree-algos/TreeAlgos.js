@@ -1,15 +1,18 @@
 /* @flow */
 
+import IterUtils from '../iter-utils/IterUtils';
+
 import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 
 type OptionalImpl<T> = T | '__NOT_IMPLEMENTED__';
 
-type IndexPath = Iterable<number>;
+export type IndexPath = Iterable<number>;
 
 /**
  * An abstract base class that contains common tree-based algorithms without
  * making assumptions about the structure of the tree and how to traverse ndoes.
+ *
  * @class
  */
 export default class TreeAlgos<TNode> {
@@ -61,8 +64,8 @@ export default class TreeAlgos<TNode> {
   }
 
   /**
-   * Check if the parent dom element contains the child dom element. This will
-   * also return true if the parent and child are the same node.
+   * Check if the parent node contains the child node. This will also return
+   * true if the parent and child are the same node.
    *
    * @param { Node } ancestor - The supposed ancestor
    *
@@ -350,7 +353,7 @@ export default class TreeAlgos<TNode> {
    *
    * @param { TNode } fromNode - The node at the start of the path
    *
-   * @param { TNode } node - The node at the end of the path
+   * @param { TNode } toNode - The node at the end of the path
    */
   static indexPathToNode(fromNode: TNode, toNode: TNode): IndexPath {
     // $FlowFixMe - Need to look into how to type iterators and iterables
@@ -502,80 +505,3 @@ function unimplThrows<T>(value: OptionalImpl<T>): T {
   }
   return value;
 }
-
-const IterUtils = {
-  createIterable<T>(iteratorFn: () => Iterator<T>): Iterable<T> {
-    // $FlowFixMe - This is correct
-    return { [Symbol.iterator]: iteratorFn };
-  },
-
-  iterFromIterable<T>(iterable: Iterable<T>): Iterator<T> {
-    // $FlowFixMe - This is correct
-    return iterable[Symbol.iterator]();
-  },
-
-  first<T>(iterator: Iterator<T>): ?T {
-    const result = iterator.next();
-    return result.done ? undefined : result.value;
-  },
-
-  last<T>(iterator: Iterator<T>): ?T {
-    let result = iterator.next();
-    let last = undefined;
-    while (!result.done) {
-      last = result.value;
-      result = iterator.next();
-    }
-    return last;
-  },
-
-  nth<T>(iterator: Iterator<T>, n: number): T {
-    let result = iterator.next();
-    let i = 0;
-    while (!result.done && i !== n) {
-      result = iterator.next();
-      ++i;
-    }
-    if (result.done) {
-      throw Error(`Iterator out of range: ${n}`);
-    }
-    return result.value;
-  },
-
-  iterateTo(iterator: Iterator<any>, item: any): boolean {
-    let result = iterator.next();
-    while (!result.done && result.value !== item) {
-      result = iterator.next();
-    }
-    return result.value === item;
-  },
-
-  indexOf(iterator: Iterator<any>, item: any): number {
-    let i = 0;
-    let result = iterator.next();
-    while (!result.done && result.value !== item) {
-      result = iterator.next();
-      ++i;
-    }
-    return result.done ? -1 : i;
-  },
-
-  /**
-   * Returns the previous item to a particular item, or undefined if there is
-   * no previous item.
-   *
-   * @throws { Error } If the previous item does not exist in the list.
-   */
-  prevOf<T>(iterator: Iterator<T>, item: T): ?T {
-    let prev = undefined;
-    let result = iterator.next();
-    while (!result.done && result.value !== item) {
-      prev = result.value;
-      result = iterator.next();
-    }
-    if (result.value === item) {
-      return prev;
-    }
-    throw Error('Could not find item in the iterator');
-  },
-};
