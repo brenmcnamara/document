@@ -3,6 +3,7 @@
 import IterUtils from '../iter-utils/IterUtils';
 import TreeAlgos from '../tree-algos/TreeAlgos';
 
+import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 
 import type { IndexPath } from '../tree-algos/TreeAlgos';
@@ -72,7 +73,7 @@ export type UnderlineEditorNode = EditorNodeStub<'u'>;
 //
 // -----------------------------------------------------------------------------
 
-export type TextEditorNode = EditorNodeStub<'text'>;
+export type TextEditorNode = EditorNodeStub<'text'> & { +text: string };
 
 // -----------------------------------------------------------------------------
 //
@@ -171,19 +172,32 @@ const EditorNodeUtils = {
   },
 
   /**
+   * Get the document node that a node belongs within.
+   *
+   * @param { EditorNode } node - The node
+   */
+  documentNode(node: EditorNode): DocumentEditorNode {
+    let next = node;
+    while (next.nodeName !== 'doc') {
+      next = nullthrows(next.parentNode);
+    }
+    return next;
+  },
+
+  /**
    * Clone a document. This makes a deep clone of the document and its
    * entire subtree.
    *
    * @param { DocumentEditorNode } doc - The node to clone
    */
-  cloneDocumentNode(doc: DocumentEditorNode): EditorNode {
+  cloneDocumentNode(doc: DocumentEditorNode): DocumentEditorNode {
     // TODO: Need to keep track of pairs between nodes from the origin tree.
     // This is used to lookup nodes based on their pair. This data structure
     // is inefficient because it takes O(n) time to lookup the nodes. Goal is
     // to create nodes that are hashable so that this lookup can be faster.
     const nodeToClonePairs: Array<[EditorNode, EditorNode]> = [];
 
-    let node = null;
+    let node: DocumentEditorNode | null = null;
 
     // NOTE: we will be iterating nodes and cloning the nodes. The iteration
     // order is important: we need to assume that if a node is being enumerated
@@ -197,12 +211,23 @@ const EditorNodeUtils = {
           nodeToClonePairs.find(pair => pair[0] === next.parentNode),
         )[1];
 
-      const copy = {..._shallowCopy(next), parentNode: parentCopy};
+      // Make a shallow copy of the node. All the properties are correct except
+      // for the childNodes array, which has references to nodes in the doc that
+      // is being cloned. As we iterate and clone the children, we will replace
+      // these references with the cloned counterparts.
+      // $FlowFixMe - Need to find a good way around this issue.
+      const copy: EditorNode = {
+        ...next,
+        childNodes: next.childNodes.slice(),
+        parentNode: parentCopy,
+      };
+
       nodeToClonePairs.push([next, copy]);
 
       // The infix iterable will enumerate the root node first. If the root
       // node is not set, it is because this is the first iteration.
-      if (!node) {
+      if (copy.nodeName === 'doc') {
+        invariant(!node, 'Expecting node to not be defined yet');
         node = copy;
       }
 
@@ -271,7 +296,7 @@ class EditorTreeAlgos extends TreeAlgos<EditorNode> {
 //
 // -----------------------------------------------------------------------------
 
-function _shallowCopy(node: EditorNode): EditorNode {
+function _shallowCopy(node: EditorNode) {
   // $FlowFixMe - Need a way to avoid these types of errors
   return { ...node, childNodes: node.childNodes.slice() };
 }

@@ -2,6 +2,8 @@
 
 import TreeAlgos from './tree-algos/TreeAlgos';
 
+import type { IndexPath } from './tree-algos/TreeAlgos';
+
 export default {
   /**
    * Check if the ancestor dom element contains the descendant dom element.
@@ -35,26 +37,52 @@ export default {
    *
    * @throws { Error } If the "parentNode" static method is not implemented.
    *
-   * @param { TNode } node - The leaf node to check for the next adjacent.
+   * @param { Node } node - The leaf node to check for the next adjacent.
    */
-   nextAdjacentLeaf(node: Node) {
-     return DOMTreeAlgos.nextAdjacentLeaf(node);
-   },
+  nextAdjacentLeaf(node: Node) {
+    return DOMTreeAlgos.nextAdjacentLeaf(node);
+  },
 
-   /**
-    * Find the previous adjacent leaf in the DOM tree. Returns null if a node
-    * has no adjacent leaves. The following are examples of "previous adjacent
-    * leaf nodes":
-    *
-    * @throws { Error } If passing in a node that is not a leaf node.
-    *
-    * @throws { Error } If the "parentNode" static method is not implemented.
-    *
-    * @param { TNode } node - The leaf node to check for the previous adjacent.
-    */
-    prevAdjacentLeaf(node: Node) {
-      return DOMTreeAlgos.prevAdjacentLeaf(node);
-    },
+  /**
+   * Find the previous adjacent leaf in the DOM tree. Returns null if a node
+   * has no adjacent leaves. The following are examples of "previous adjacent
+   * leaf nodes":
+   *
+   * @throws { Error } If passing in a node that is not a leaf node.
+   *
+   * @throws { Error } If the "parentNode" static method is not implemented.
+   *
+   * @param { Node } node - The leaf node to check for the previous adjacent.
+   */
+  prevAdjacentLeaf(node: Node) {
+    return DOMTreeAlgos.prevAdjacentLeaf(node);
+  },
+
+  /**
+   * Get the node at a particular index path.
+   *
+   * @throws { Error } If no node exists at the path.
+   *
+   * @param { Node } fromNode - The node to start the path
+   *
+   * @param { IndexPath } indexPath - The index path to navigate.
+   */
+  nodeAtIndexPath(root: Node, indexPath: IndexPath): Node {
+    return DOMTreeAlgos.nodeAtIndexPath(root, indexPath);
+  },
+
+  /**
+   * Calculates the index path from a node to another.
+   *
+   * @throws { Error } If no path exists to the node
+   *
+   * @param { Node } fromNode - The node at the start of the path
+   *
+   * @param { TNode } node - The node at the end of the path
+   */
+  indexPathToNode(fromNode: Node, toNode: Node): IndexPath {
+    return DOMTreeAlgos.indexPathToNode(fromNode, toNode);
+  },
 };
 
 class DOMTreeAlgos extends TreeAlgos<Node> {

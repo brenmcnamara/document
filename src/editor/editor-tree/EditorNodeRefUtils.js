@@ -19,6 +19,17 @@ export type EditorNodeRefType = $PropertyType<EditorNodeRef, 'type'>;
 
 const EditorNodeRefUtils = {
   /**
+   * Checks if a node ref is valid. A node ref is invalid if:
+   *
+   *   - Currently there is no such thing as an invalid ref.
+   *
+   * @throws { Error } if the ref is invalid.
+   */
+  validate(ref: EditorNodeRef): void {
+    // NO-OP, nothing to make this invalid yet.
+  },
+
+  /**
    * Create a reference to a particular editor node.
    *
    * @param { EditorNode } node - The editor node

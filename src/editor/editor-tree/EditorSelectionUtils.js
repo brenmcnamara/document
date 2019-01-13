@@ -1,16 +1,15 @@
 /* @flow */
 
-import EditorNodeRefUtils from './EditorNodeRefUtils';
+import EditorNodeUtils from './EditorNodeUtils';
 
 import invariant from 'invariant';
 
 import type { EditorNode } from './EditorNodeUtils';
-import type { EditorNodeRef } from './EditorNodeRefUtils';
 
 export type EditorSelection = {|
-  +anchorNodeRef: EditorNodeRef,
+  +anchorNode: EditorNode,
   +anchorOffset: number,
-  +focusNodeRef: EditorNodeRef,
+  +focusNode: EditorNode,
   +focusOffset: number,
 |};
 
@@ -19,8 +18,8 @@ const EditorSelectionUtils = {
    * Validate the selection. If validation fails, an error is raised. A valid
    * selection has the following properties:
    *
-   *  - The anchorNodeRef and focusNodeRef properties are refering to nodes
-   *    that share a root.
+   *  - The anchorNode and focusNode properties are refering to nodes in the
+   *    same document
    *
    *  - The anchorOffset and focusOffset are in range
    *
@@ -29,7 +28,40 @@ const EditorSelectionUtils = {
    * @param { EditorSelection } selection - the selection to validate.
    */
   validate(selection: EditorSelection): void {
-    throw Error('IMPLEMENT ME');
+    const { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
+    if (
+      EditorNodeUtils.documentNode(anchorNode) !==
+      EditorNodeUtils.documentNode(focusNode)
+    ) {
+      throw Error(
+        'Expecting "focusNode" and "anchorNode" to refer to nodes in the same document',
+      );
+    }
+
+    if (anchorOffset > anchorNode.childNodes.length) {
+      throw Error('"anchorOffset" is out of range');
+    }
+    if (focusOffset > focusNode.childNodes.length) {
+      throw Error('"focusOffset" is out of range');
+    }
+  },
+
+  /**
+   * Returns true if the selecton is a norm, false otherwise. Please refer to
+   * documentation on the method "norm" to see how a normalized selection is
+   * defined.
+   *
+   * @param { EditorSelection } selection - The selection
+   */
+  isNorm(selection: EditorSelection): boolean {
+    const { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
+
+    return (
+      anchorNode.nodeName === 'text' &&
+      anchorOffset < anchorNode.text.length &&
+      focusNode.nodeName === 'text' &&
+      focusOffset < focusNode.text.length
+    );
   },
 
   /**
@@ -53,7 +85,7 @@ const EditorSelectionUtils = {
   isCollapsed(selection: EditorSelection): boolean {
     const norm = EditorSelectionUtils.norm(selection);
     return (
-      EditorNodeRefUtils.isEqual(norm.anchorNodeRef, norm.focusNodeRef) &&
+      norm.anchorNode === norm.focusNode &&
       norm.anchorOffset === norm.focusOffset
     );
   },
@@ -103,10 +135,6 @@ const EditorSelectionUtils = {
     );
 
     return { anchorNode, anchorOffset, focusNode, focusOffset };
-  },
-
-  isNorm(selection: EditorSelection): boolean {
-    throw Error('IMPLEMENT ME');
   },
 
   /**
@@ -236,9 +264,9 @@ function _normNodeAndOffset(
     if (snapToEnd) {
       returnNode = returnNode.childNodes[returnNode.childNodes.length - 1];
       returnOffset =
-        returnNode.childNodes.length > 0
-          ? returnNode.childNodes.length
-          : returnNode.textContent.length;
+        returnNode.nodeName === 'text'
+          ? returnNode.text.length
+          : returnNode.childNodes.length;
     } else {
       returnNode = returnNode.childNodes[returnOffset];
       returnOffset = 0;

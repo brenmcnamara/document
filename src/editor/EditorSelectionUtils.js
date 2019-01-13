@@ -14,6 +14,19 @@ export type EditorSelection = {|
 
 const EditorSelectionUtils = {
   /**
+   * Checks if a selection is valid. A selection is valid if:
+   *
+   *  - The offsets of the anchor node and focus node are in range
+   *
+   *  - The anchor and focus node belong to the same document
+   *
+   *  - The anchor and focus ref are both valid
+   */
+  validate(selection: EditorSelection): void {
+    throw Error('IMPLEMENT ME');
+  },
+
+  /**
    * Converts a native browser selection object into an editor selection.
    *
    * @param { Selection } native - Native browser selection
@@ -117,11 +130,11 @@ const EditorSelectionUtils = {
    *
    * @param { HTMLElement } element - The element used to position the selection
    */
-  cursorAtStart(element: HTMLElement): EditorSelection {
+  cursorAtStart(node: Node): EditorSelection {
     return {
-      anchorNode: element,
+      anchorNode: node,
       anchorOffset: 0,
-      focusNode: element,
+      focusNode: node,
       focusOffset: 0,
     };
   },
@@ -166,6 +179,11 @@ const EditorSelectionUtils = {
     // i.e. - <span><span><span>Hello World</span></span></span> where the end
     //        offset is off the edge of the selection.
 
+    // TODO: Need to make there is only 1 possible normalized selection for
+    // any selection. Right now, we can have a normalized selection that indexes
+    // the full length of text content, which is equivalent to indexing the
+    // 0th index at the next leaf. This will result in subtle bugs with equality
+    // checks and collapse checks (and possibly more things).
     if (
       selection.anchorNode.childNodes.length === 0 &&
       selection.focusNode.childNodes.length === 0
