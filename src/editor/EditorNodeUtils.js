@@ -1,12 +1,12 @@
 /* @flow */
 
-import IterUtils from '../iter-utils/IterUtils';
-import TreeAlgos from '../tree-algos/TreeAlgos';
+import IterUtils from './iter-utils/IterUtils';
+import TreeAlgos from './tree-algos/TreeAlgos';
 
 import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 
-import type { IndexPath } from '../tree-algos/TreeAlgos';
+import type { IndexPath } from './tree-algos/TreeAlgos';
 
 export type EditorNode =
   | BoldEditorNode
@@ -269,6 +269,34 @@ const EditorNodeUtils = {
    */
   nodeAtIndexPath(fromNode: EditorNode, indexPath: IndexPath): EditorNode {
     return EditorTreeAlgos.nodeAtIndexPath(fromNode, indexPath);
+  },
+
+  /**
+   * Find the next adjacent leaf in the tree. Returns null if a node has no
+   * adjacent leaves.
+   *
+   * @throws { Error } If passing in a node that is not a leaf node.
+   *
+   * @throws { Error } If the "parentNode" static method is not implemented.
+   *
+   * @param { EditorNode } node - The leaf node to check for the next adjacent.
+   */
+  nextAdjacentLeaf(node: EditorNode): EditorNode | null {
+    return EditorTreeAlgos.nextAdjacentLeaf(node);
+    },
+
+  /**
+   * Find the previous adjacent leaf in the tree. Returns null if a node has no
+   * adjacent leaves.
+   *
+   * @throws { Error } If passing in a node that is not a leaf node.
+   *
+   * @throws { Error } If the "parentNode" static method is not implemented.
+   *
+   * @param { EditorNode } node - The leaf node to check for the previous adjacent.
+   */
+  prevAdjacentLeaf(node: EditorNode): EditorNode | null {
+    return EditorTreeAlgos.prevAdjacentLeaf(node);
   },
 };
 

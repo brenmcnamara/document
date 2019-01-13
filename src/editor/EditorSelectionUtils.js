@@ -1,43 +1,79 @@
 /* @flow */
 
-import DOMUtils from './DOMUtils';
+import EditorNodeUtils from './EditorNodeUtils';
 
 import invariant from 'invariant';
-import nullthrows from 'nullthrows';
+
+import type { EditorNode } from './EditorNodeUtils';
 
 export type EditorSelection = {|
-  +anchorNode: Node,
+  +anchorNode: EditorNode,
   +anchorOffset: number,
-  +focusNode: Node,
+  +focusNode: EditorNode,
   +focusOffset: number,
 |};
 
 const EditorSelectionUtils = {
   /**
-   * Checks if a selection is valid. A selection is valid if:
+   * Validate the selection. If validation fails, an error is raised. A valid
+   * selection has the following properties:
    *
-   *  - The offsets of the anchor node and focus node are in range
+   *  - The anchorNode and focusNode properties are refering to nodes in the
+   *    same document
    *
-   *  - The anchor and focus node belong to the same document
+   *  - The anchorOffset and focusOffset are in range
    *
-   *  - The anchor and focus ref are both valid
+   * @throws { Error } If the selection is invalid.
+   *
+   * @param { EditorSelection } selection - the selection to validate.
    */
   validate(selection: EditorSelection): void {
-    throw Error('IMPLEMENT ME');
+    const { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
+    if (
+      EditorNodeUtils.documentNode(anchorNode) !==
+      EditorNodeUtils.documentNode(focusNode)
+    ) {
+      throw Error(
+        'Expecting "focusNode" and "anchorNode" to refer to nodes in the same document',
+      );
+    }
+
+    if (anchorOffset > anchorNode.childNodes.length) {
+      throw Error('"anchorOffset" is out of range');
+    }
+    if (focusOffset > focusNode.childNodes.length) {
+      throw Error('"focusOffset" is out of range');
+    }
   },
 
   /**
-   * Converts a native browser selection object into an editor selection.
+   * Returns true if the selecton is a norm, false otherwise. Please refer to
+   * documentation on the method "norm" to see how a normalized selection is
+   * defined.
+   *
+   * @param { EditorSelection } selection - The selection
+   */
+  isNorm(selection: EditorSelection): boolean {
+    const { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
+
+    return (
+      anchorNode.nodeName === 'text' &&
+      anchorOffset < anchorNode.text.length &&
+      focusNode.nodeName === 'text' &&
+      focusOffset < focusNode.text.length
+    );
+  },
+
+  /**
+   * Converts a native browser selection object into an editor selection. This
+   * will only work if the native browser selection is selecting a piece of the
+   * DOM that is entirely managed by the Editor API. Returns null if the
+   * selection cannot be converted.
    *
    * @param { Selection } native - Native browser selection
    */
   fromNativeSelection(native: Selection): EditorSelection | null {
-    const { anchorNode, anchorOffset, focusNode, focusOffset } = native;
-    if (!anchorNode || !focusNode) {
-      return null;
-    }
-
-    return { anchorNode, anchorOffset, focusNode, focusOffset };
+    throw Error('IMPLEMENT ME');
   },
 
   /**
@@ -47,11 +83,58 @@ const EditorSelectionUtils = {
    * @param { EditorSelection} selection - The editor selection
    */
   isCollapsed(selection: EditorSelection): boolean {
-    const normalized = EditorSelectionUtils.normalize(selection);
+    const norm = EditorSelectionUtils.norm(selection);
     return (
-      normalized.anchorNode === normalized.focusNode &&
-      normalized.anchorOffset === normalized.focusOffset
+      norm.anchorNode === norm.focusNode &&
+      norm.anchorOffset === norm.focusOffset
     );
+  },
+
+  /**
+   * Creates an equivalent selection that is "normalized. There are some
+   * important properties that normalized selections all share:
+   *
+   *  - Normalized selections have anchorNode and focusNode props that are
+   *    both leaf nodes
+   *
+   *  - Every selection has a unique normalized selection. Therefore, if two
+   *    selections have the same normalized selection, they are equivalent
+   *    selections. We can thus use the normalized selection to define an
+   *    equivalence relation of selections.
+   *
+   *  - As a direct consequence of the above property, normalizing a selection
+   *    is idempotent. In other words: norm(selection) == norm(norm(selection))
+   *
+   *  - A collapsed node has a (anchorNode, anchorOffset) pair that is
+   *    equivalent to the (focusNode, focusOffset) pair.
+   *
+   * @param { EditorSelection } selection - The selection to normalize.
+   */
+  norm(selection: EditorSelection): EditorSelection {
+    // TODO: Test on super-nested nodes.
+    // i.e. - <span><span><span>Hello World</span></span></span> where the end
+    //        offset is off the edge of the selection.
+
+    // TODO: Need to make there is only 1 possible normalized selection for
+    // any selection. Right now, we can have a normalized selection that indexes
+    // the full length of text content, which is equivalent to indexing the
+    // 0th index at the next leaf. This will result in subtle bugs with equality
+    // checks and collapse checks (and possibly more things).
+    if (EditorSelectionUtils.isNorm(selection)) {
+      return selection;
+    }
+
+    const { node: anchorNode, offset: anchorOffset } = _normNodeAndOffset(
+      selection.anchorNode,
+      selection.anchorOffset,
+    );
+
+    const { node: focusNode, offset: focusOffset } = _normNodeAndOffset(
+      selection.focusNode,
+      selection.focusOffset,
+    );
+
+    return { anchorNode, anchorOffset, focusNode, focusOffset };
   },
 
   /**
@@ -62,11 +145,13 @@ const EditorSelectionUtils = {
    * @param { EditorSelection } s2 - The second selection
    */
   isEqual(s1: EditorSelection, s2: EditorSelection): boolean {
+    const norm1 = EditorSelectionUtils.norm(s1);
+    const norm2 = EditorSelectionUtils.norm(s2);
     return (
-      s1.anchorOffset === s2.anchorOffset &&
-      s1.anchorNode === s2.anchorNode &&
-      s1.focusOffset === s2.focusOffset &&
-      s1.focusNode === s2.focusNode
+      norm1.anchorOffset === norm2.anchorOffset &&
+      norm1.anchorNode === norm2.anchorNode &&
+      norm1.focusOffset === norm2.focusOffset &&
+      norm1.focusNode === norm2.focusNode
     );
   },
 
@@ -77,60 +162,16 @@ const EditorSelectionUtils = {
    * @param { EditorSelection } selection - The selection object
    */
   isBackward(selection: EditorSelection): boolean {
-    const normalized = EditorSelectionUtils.normalize(selection);
-    const { anchorNode, anchorOffset, focusNode, focusOffset } = normalized;
-
-    if (anchorNode === focusNode) {
-      return anchorOffset > focusOffset;
-    }
-
-    const lca = DOMUtils.leastCommonAncestor(anchorNode, focusNode);
-
-    if (!lca) {
-      throw Error(
-        'Malformed EditorSelection: anchorNode and focusNode are not in the same DOM tree',
-      );
-    }
-
-    // NOTE: Because we normalized the selection, we know that the anchor node
-    // and focus node are both leaf nodes in the DOM. We also know that they
-    // are not the same node because we checked that corner case above.
-    // Therefore, the lca of the two nodes must be a node different than both
-    // of them. This also means that of the immediate children of the lca,
-    // one of the children is an ancestor of the anchorNode and one of the
-    // children is an ancestor of the focusNode. The ancestors of the two nodes
-    // must necessarily be different by definition of what an "LCA" is. We will
-    // use the index of these two ancestors to determine the ordering of the
-    // focus and anchor nodes.
-    let i = 0;
-    let anchorAncestorIndex = -1;
-    let focusAncestorIndex = -1;
-    for (let node of lca.childNodes) {
-      if (anchorAncestorIndex >= 0 && focusAncestorIndex >= 0) {
-        break;
-      }
-
-      if (anchorAncestorIndex < 0 && DOMUtils.containsNode(node, anchorNode)) {
-        anchorAncestorIndex = i;
-      }
-
-      if (focusAncestorIndex < 0 && DOMUtils.containsNode(node, focusNode)) {
-        focusAncestorIndex = i;
-      }
-
-      ++i;
-    }
-
-    return anchorAncestorIndex > focusAncestorIndex;
+    throw Error('NOT IMPLEMENTED');
   },
 
   /**
    * Create a selection element that puts the cursor at the start of a
-   * partcular html element.
+   * partcular node.
    *
-   * @param { HTMLElement } element - The element used to position the selection
+   * @param { EditorNode } node - The node used to position the selection
    */
-  cursorAtStart(node: Node): EditorSelection {
+  cursorAtStart(node: EditorNode): EditorSelection {
     return {
       anchorNode: node,
       anchorOffset: 0,
@@ -153,53 +194,16 @@ const EditorSelectionUtils = {
    *        collapsing itself. Default is false
    */
   shiftChar(selection: EditorSelection, n: number): EditorSelection {
-    const normalized = EditorSelectionUtils.normalize(selection);
+    const norm = EditorSelectionUtils.norm(selection);
     const { node: anchorNode, offset: anchorOffset } = _shiftCharNodeAndOffset(
-      normalized.anchorNode,
-      normalized.anchorOffset,
+      norm.anchorNode,
+      norm.anchorOffset,
       n,
     );
     const { node: focusNode, offset: focusOffset } = _shiftCharNodeAndOffset(
-      normalized.focusNode,
-      normalized.focusOffset,
+      norm.focusNode,
+      norm.focusOffset,
       n,
-    );
-
-    return { anchorNode, anchorOffset, focusNode, focusOffset };
-  },
-
-  /**
-   * Creates an equivalent selection that is "normalized". A normalized
-   * selection is one where the anchorNode and the focusNode are leaf nodes.
-   *
-   * @param { EditorSelection } selection - The selection to normalize.
-   */
-  normalize(selection: EditorSelection): EditorSelection {
-    // TODO: Test on super-nested nodes.
-    // i.e. - <span><span><span>Hello World</span></span></span> where the end
-    //        offset is off the edge of the selection.
-
-    // TODO: Need to make there is only 1 possible normalized selection for
-    // any selection. Right now, we can have a normalized selection that indexes
-    // the full length of text content, which is equivalent to indexing the
-    // 0th index at the next leaf. This will result in subtle bugs with equality
-    // checks and collapse checks (and possibly more things).
-    if (
-      selection.anchorNode.childNodes.length === 0 &&
-      selection.focusNode.childNodes.length === 0
-    ) {
-      // This selection is already normalized.
-      return selection;
-    }
-
-    const { node: anchorNode, offset: anchorOffset } = _normalizeNodeAndOffset(
-      selection.anchorNode,
-      selection.anchorOffset,
-    );
-
-    const { node: focusNode, offset: focusOffset } = _normalizeNodeAndOffset(
-      selection.focusNode,
-      selection.focusOffset,
     );
 
     return { anchorNode, anchorOffset, focusNode, focusOffset };
@@ -213,12 +217,12 @@ const EditorSelectionUtils = {
    * @param { string } anchorOrFocus - "anchor" to collapse to the anchor node,
    *        "focus" to collapse to the focus node.
    */
-  collapseTo(
+  collapse(
     selection: EditorSelection,
-    anchorOrFocus: 'anchor' | 'focus',
+    anchorOrFocus: 'to-anchor' | 'to-focus',
   ): EditorSelection {
     switch (anchorOrFocus) {
-      case 'anchor':
+      case 'to-anchor':
         return {
           anchorNode: selection.anchorNode,
           anchorOffset: selection.anchorOffset,
@@ -226,7 +230,7 @@ const EditorSelectionUtils = {
           focusOffset: selection.focusOffset,
         };
 
-      case 'focus':
+      case 'to-focus':
         return {
           anchorNode: selection.focusNode,
           anchorOffset: selection.focusOffset,
@@ -236,16 +240,16 @@ const EditorSelectionUtils = {
 
       default:
         throw Error(
-          `anchorOrFocus set to "${anchorOrFocus}". Must be either "anchor" or "focus"`,
+          `anchorOrFocus set to "${anchorOrFocus}". Must be either "to-anchor" or "to-focus"`,
         );
     }
   },
 };
 
-function _normalizeNodeAndOffset(
-  node: Node,
+function _normNodeAndOffset(
+  node: EditorNode,
   offset: number,
-): { node: Node, offset: number } {
+): { node: EditorNode, offset: number } {
   let snapToEnd = false;
 
   let returnNode = node;
@@ -260,35 +264,39 @@ function _normalizeNodeAndOffset(
     if (snapToEnd) {
       returnNode = returnNode.childNodes[returnNode.childNodes.length - 1];
       returnOffset =
-        returnNode.childNodes.length > 0
-          ? returnNode.childNodes.length
-          : returnNode.textContent.length;
+        returnNode.nodeName === 'text'
+          ? returnNode.text.length
+          : returnNode.childNodes.length;
     } else {
       returnNode = returnNode.childNodes[returnOffset];
       returnOffset = 0;
     }
   }
+
+  // At this point, the returnNode is gauranteed to be a leaf node. Need to make
+  // sure that it is the leaf node that we want.
+  invariant(
+    returnNode.nodeName === 'text',
+    'norm only supports leaf nodes that are "text"',
+  );
+  if (returnOffset === returnNode.text.length) {
+    const nextNode = EditorNodeUtils.nextAdjacentLeaf(returnNode);
+    // If this is the last leaf node, we will keep the offset and node as is.
+    if (nextNode) {
+      returnNode = nextNode;
+      returnOffset = 0;
+    }
+  }
+
   return { node: returnNode, offset: returnOffset };
 }
 
 function _shiftCharNodeAndOffset(
-  leaf: Node,
+  leaf: EditorNode,
   offset: number,
   n: number,
-): { node: Node, offset: number } {
-  let returnNode = leaf;
-  let returnOffset = offset + n;
-  while (returnOffset > returnNode.textContent.length) {
-    const prevNode = returnNode;
-    returnNode = DOMUtils.nextAdjacentLeaf(returnNode);
-    if (!returnNode) {
-      throw Error('Trying to shift to character out of range');
-    }
-    returnOffset = returnOffset - prevNode.textContent.length;
-    invariant(returnOffset >= 0, 'Offset should never be < 0');
-  }
-
-  return { node: returnNode, offset: returnOffset };
+): { node: EditorNode, offset: number } {
+  throw Error('IMPLEMENT ME!');
 }
 
 export default EditorSelectionUtils;

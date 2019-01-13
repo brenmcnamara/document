@@ -13,6 +13,7 @@ import type { EditorSelection } from './EditorSelectionUtils';
  * In modern non-IE browsers, we can support both forward and backward
  * selections.
  *
+ * @param { Node } htmlDocument - The root html node of the document.
  *
  * @param { EditorSelection } selection - The selection to set on the DOM.
  *
@@ -22,41 +23,44 @@ import type { EditorSelection } from './EditorSelectionUtils';
  * @throw { Error } If trying to set backwards selection on browser that does
  *        not support backwards selection.
  */
-export default function setEditorSelection(sel: EditorSelection): void {
+export default function setEditorSelection(
+  htmlDocument: Node,
+  sel: EditorSelection,
+): void {
   // TODO: Backwards selection not implemented!!
   // TODO: What happens when the node is not focused??
 
   // It's possible that the editor has been removed from the DOM but
   // our selection code doesn't know it yet. Forcing selection in
   // this case may lead to errors, so just bail now.
-  if (
-    !document.documentElement ||
-    !DOMUtils.containsNode(document.documentElement, sel.anchorNode) ||
-    !DOMUtils.containsNode(document.documentElement, sel.focusNode)
-  ) {
-    throw Error('Trying to select DOM node that is not attached to DOM');
-  }
-
-  const nativeSel = global.getSelection();
-  const isBackward = EditorSelectionUtils.isBackward(sel);
-
-  // IE doesn't support backward selection. Swap key/offset pairs.
-  if (!nativeSel.extend && isBackward) {
-    throw Error('Browser does not support backward selection');
-  }
-
-  const range = document.createRange();
-
-  if (isBackward) {
-    // range.setStart();
-  } else {
-    range.setStart(sel.anchorNode, sel.anchorOffset);
-    range.setEnd(sel.focusNode, sel.focusOffset);
-  }
-
-  // ---------------------------------------------------------------------------
-  // MUTATION ZONE! ALL SIDE EFFECTS HAPPEN BELOW THIS MARK
-  // ---------------------------------------------------------------------------
-  nativeSel.removeAllRanges();
-  nativeSel.addRange(range);
+  // if (
+  //   !document.documentElement ||
+  //   !DOMUtils.containsNode(document.documentElement, sel.anchorNode) ||
+  //   !DOMUtils.containsNode(document.documentElement, sel.focusNode)
+  // ) {
+  //   throw Error('Trying to select DOM node that is not attached to DOM');
+  // }
+  //
+  // const nativeSel = global.getSelection();
+  // const isBackward = EditorSelectionUtils.isBackward(sel);
+  //
+  // // IE doesn't support backward selection. Swap key/offset pairs.
+  // if (!nativeSel.extend && isBackward) {
+  //   throw Error('Browser does not support backward selection');
+  // }
+  //
+  // const range = document.createRange();
+  //
+  // if (isBackward) {
+  //   // range.setStart();
+  // } else {
+  //   range.setStart(sel.anchorNode, sel.anchorOffset);
+  //   range.setEnd(sel.focusNode, sel.focusOffset);
+  // }
+  //
+  // // ---------------------------------------------------------------------------
+  // // MUTATION ZONE! ALL SIDE EFFECTS HAPPEN BELOW THIS MARK
+  // // ---------------------------------------------------------------------------
+  // nativeSel.removeAllRanges();
+  // nativeSel.addRange(range);
 }

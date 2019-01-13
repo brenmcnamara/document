@@ -3,7 +3,7 @@
 import EditorNodeUtils from './EditorNodeUtils';
 
 import type { DocumentEditorNode, EditorNode } from './EditorNodeUtils';
-import type { IndexPath } from '../tree-algos/TreeAlgos';
+import type { IndexPath } from './tree-algos/TreeAlgos';
 
 export type EditorNodeRef = {|
   +node: EditorNode,

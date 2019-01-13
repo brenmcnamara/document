@@ -39,9 +39,7 @@ export default class Editor extends React.Component<Props> {
   //
   // ---------------------------------------------------------------------------
 
-  _onOutputNext = (content: EditorContent): void => {
-    this._setContent(content);
-  };
+  _onOutputNext = (content: EditorContent): void => {};
 
   _onOutputError = (error: any): void => {
     throw error;
@@ -113,35 +111,7 @@ export default class Editor extends React.Component<Props> {
   _onPaste = null;
 
   _onSelect = (event: SyntheticEvent<>): void => {
-    const nativeSelection = getSelection();
-    if (!nativeSelection) {
-      this._editorContent = {
-        ...this._editorContent,
-        selection: EditorSelectionUtils.cursorAtStart(this._editorContent.html),
-      };
-
-      this._inputObserver &&
-        this._inputObserver.next({
-          selection: this._editorContent.selection,
-          type: 'CHANGE_SELECTION',
-        });
-      return;
-    }
-
-    let selection = EditorSelectionUtils.fromNativeSelection(nativeSelection);
-    if (!selection) {
-      selection = EditorSelectionUtils.cursorAtStart(this._editorContent.html);
-    }
-
-    if (
-      EditorSelectionUtils.isEqual(this._editorContent.selection, selection)
-    ) {
-      return;
-    }
-
-    this._editorContent = { ...this._editorContent, selection };
-    this._inputObserver &&
-      this._inputObserver.next({ selection, type: 'CHANGE_SELECTION' });
+    // TODO: Implement me!
   };
 
   // ---------------------------------------------------------------------------
@@ -159,10 +129,7 @@ export default class Editor extends React.Component<Props> {
     });
   }
 
-  componentDidMount(): void {
-    this._setContentUNSAFE(this._editorContent);
-    global.html = this._editorRef.current;
-  }
+  componentDidMount(): void {}
 
   componentWillUnmount(): void {
     this._outputSubscription && this._outputSubscription.unsubscribe();
@@ -205,44 +172,12 @@ export default class Editor extends React.Component<Props> {
     );
   }
 
-  // TODO: Implement selection
-  _setContent(content: EditorContent): void {
-    const root = this._editorRef.current;
-    if (!root) {
-      this._editorContent = content;
-      return;
-    }
-
-    invariant(
-      root.childNodes.length <= 1,
-      'Expecting no more than 1 child of root editor component',
-    );
-
-    this._setContentUNSAFE(content);
-
-    // SET THE SELECTION
-    this._editorContent = content;
-  }
+  _setContent(content: EditorContent): void {}
 
   _hasFocus(): boolean {
     return Boolean(
       this._editorRef.current &&
         document.activeElement === this._editorRef.current,
     );
-  }
-
-  _setContentUNSAFE(content: EditorContent): void {
-    const root = nullthrows(this._editorRef.current);
-
-    // SET THE HTML
-    if (!this._editorContent.html.isEqualNode(content.html)) {
-      if (root.childNodes.length === 0) {
-        root.append(content.html);
-      } else {
-        root.replaceNode(root.childNodes[0], content.html);
-      }
-    }
-
-    // SET THE SELECTION
   }
 }
