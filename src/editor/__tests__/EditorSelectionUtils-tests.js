@@ -236,3 +236,55 @@ test('isEqual returns true for a selection and its norm', () => {
   const normAll = EditorSelectionUtils.norm(all);
   expect(EditorSelectionUtils.isEqual(all, normAll)).toBe(true);
 });
+
+test('isCollapsed returns true for normalized, collapsed selections', ()=> {
+  const leaf = getFirstLeaf(Tree1);
+  const selection = {
+    anchorNode: leaf,
+    anchorOffset: 1,
+    focusNode: leaf,
+    focusOffset: 1,
+  };
+  expect(EditorSelectionUtils.isCollapsed(selection)).toBe(true);
+});
+
+test('isCollapsed returns false for normalized, non-collapsed selections', ()=> {
+  const leaf = getFirstLeaf(Tree1);
+  const selection = {
+    anchorNode: leaf,
+    anchorOffset: 0,
+    focusNode: leaf,
+    focusOffset: 1,
+  };
+  expect(EditorSelectionUtils.isCollapsed(selection)).toBe(false);
+});
+
+test('isCollapsed returns true for non-normalized, collapsed selections', () => {
+  const selection = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.isCollapsed(selection)).toBe(true);
+});
+
+test('isCollapsed returns false for non-normalized, non-collapsed selections', () => {
+  const selection = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 1,
+  };
+  expect(EditorSelectionUtils.isCollapsed(selection)).toBe(false);
+});
+
+test('isCollapsed returns true for collapsed selections where the cursor is at the end of the doc', () => {
+  const selection = {
+    anchorNode: Tree1,
+    anchorOffset: Tree1.childNodes.length,
+    focusNode: Tree1,
+    focusOffset: Tree1.childNodes.length,
+  };
+  expect(EditorSelectionUtils.isCollapsed(selection)).toBe(true);
+});
