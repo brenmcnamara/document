@@ -175,3 +175,64 @@ test('norm normalizes a non-normalized selection with leaf anchor and focus', ()
   };
   expect(EditorSelectionUtils.norm(selection2)).toEqual(normSelection2);
 });
+
+test('isEqual returns true for selection with the same node and offset', () => {
+  const selection1 = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  const selection2 = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.isEqual(selection1, selection2)).toBe(true);
+});
+
+test('isEqual returns false for different selections', () => {
+  const selection1 = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  const selection2 = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 1,
+  };
+  expect(EditorSelectionUtils.isEqual(selection1, selection2)).toBe(false);
+});
+
+test('isEqual returns true for a selection and its norm', () => {
+  const collapsed = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  const normCollapsed = EditorSelectionUtils.norm(collapsed);
+  expect(EditorSelectionUtils.isEqual(collapsed, normCollapsed)).toBe(true);
+
+  const partial = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 1,
+  };
+  const normPartial = EditorSelectionUtils.norm(partial);
+  expect(EditorSelectionUtils.isEqual(partial, normPartial)).toBe(true);
+
+  const all = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: Tree1.childNodes.length,
+  };
+  const normAll = EditorSelectionUtils.norm(all);
+  expect(EditorSelectionUtils.isEqual(all, normAll)).toBe(true);
+});

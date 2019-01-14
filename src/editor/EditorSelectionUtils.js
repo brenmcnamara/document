@@ -15,6 +15,18 @@ export type EditorSelection = {|
 
 const EditorSelectionUtils = {
   /**
+   * Converts a native browser selection object into an editor selection. This
+   * will only work if the native browser selection is selecting a piece of the
+   * DOM that is entirely managed by the Editor API. Returns null if the
+   * selection cannot be converted.
+   *
+   * @param { Selection } native - Native browser selection
+   */
+  fromNativeSelection(native: Selection): EditorSelection | null {
+    throw Error('IMPLEMENT ME');
+  },
+
+  /**
    * Validate the selection. If validation fails, an error is raised. A valid
    * selection has the following properties:
    *
@@ -61,32 +73,6 @@ const EditorSelectionUtils = {
       anchorOffset < anchorNode.text.length &&
       focusNode.nodeName === 'text' &&
       focusOffset < focusNode.text.length
-    );
-  },
-
-  /**
-   * Converts a native browser selection object into an editor selection. This
-   * will only work if the native browser selection is selecting a piece of the
-   * DOM that is entirely managed by the Editor API. Returns null if the
-   * selection cannot be converted.
-   *
-   * @param { Selection } native - Native browser selection
-   */
-  fromNativeSelection(native: Selection): EditorSelection | null {
-    throw Error('IMPLEMENT ME');
-  },
-
-  /**
-   * A collapsed selection is one where the selection is at a single point.
-   * There is no range of text that is selected.
-   *
-   * @param { EditorSelection} selection - The editor selection
-   */
-  isCollapsed(selection: EditorSelection): boolean {
-    const norm = EditorSelectionUtils.norm(selection);
-    return (
-      norm.anchorNode === norm.focusNode &&
-      norm.anchorOffset === norm.focusOffset
     );
   },
 
@@ -152,6 +138,20 @@ const EditorSelectionUtils = {
       norm1.anchorNode === norm2.anchorNode &&
       norm1.focusOffset === norm2.focusOffset &&
       norm1.focusNode === norm2.focusNode
+    );
+  },
+
+  /**
+   * A collapsed selection is one where the selection is at a single point.
+   * There is no range of text that is selected.
+   *
+   * @param { EditorSelection} selection - The editor selection
+   */
+  isCollapsed(selection: EditorSelection): boolean {
+    const norm = EditorSelectionUtils.norm(selection);
+    return (
+      norm.anchorNode === norm.focusNode &&
+      norm.anchorOffset === norm.focusOffset
     );
   },
 
