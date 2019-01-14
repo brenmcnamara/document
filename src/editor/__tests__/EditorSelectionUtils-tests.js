@@ -288,3 +288,105 @@ test('isCollapsed returns true for collapsed selections where the cursor is at t
   };
   expect(EditorSelectionUtils.isCollapsed(selection)).toBe(true);
 });
+
+test('collapse collapses selection to the focus', () => {
+  const original = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 1,
+  };
+  const collapsed = EditorSelectionUtils.collapse(original, 'to-focus');
+  const expected = {
+    anchorNode: Tree1,
+    anchorOffset: 1,
+    focusNode: Tree1,
+    focusOffset: 1,
+  };
+  expect(EditorSelectionUtils.isEqual(collapsed, expected)).toBe(true);
+});
+
+test('collapse collapses backward selections to the focus', () => {
+  const original = {
+    anchorNode: Tree1,
+    anchorOffset: 1,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  const collapsed = EditorSelectionUtils.collapse(original, 'to-focus');
+  const expected = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.isEqual(collapsed, expected)).toBe(true);
+});
+
+test('collapse collapses selection to the anchor', () => {
+  const original = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 1,
+  };
+  const collapsed = EditorSelectionUtils.collapse(original, 'to-anchor');
+  const expected = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.isEqual(collapsed, expected)).toBe(true);
+});
+
+test('collapse collapses backward selections to the anchor', () => {
+  const original = {
+    anchorNode: Tree1,
+    anchorOffset: 1,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  const collapsed = EditorSelectionUtils.collapse(original, 'to-anchor');
+  const expected = {
+    anchorNode: Tree1,
+    anchorOffset: 1,
+    focusNode: Tree1,
+    focusOffset: 1,
+  };
+  expect(EditorSelectionUtils.isEqual(collapsed, expected)).toBe(true);
+});
+
+test('collapse collapses selection to the end of the document', () => {
+  const original = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: Tree1.childNodes.length,
+  };
+  const collapsed = EditorSelectionUtils.collapse(original, 'to-focus');
+  const expected = {
+    anchorNode: Tree1,
+    anchorOffset: Tree1.childNodes.length,
+    focusNode: Tree1,
+    focusOffset: Tree1.childNodes.length,
+  };
+  expect(EditorSelectionUtils.isEqual(collapsed, expected)).toBe(true);
+});
+
+test('collapse collapses backwards selection to the end of the document', () => {
+  const original = {
+    anchorNode: Tree1,
+    anchorOffset: Tree1.childNodes.length,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  const collapsed = EditorSelectionUtils.collapse(original, 'to-anchor');
+  const expected = {
+    anchorNode: Tree1,
+    anchorOffset: Tree1.childNodes.length,
+    focusNode: Tree1,
+    focusOffset: Tree1.childNodes.length,
+  };
+  expect(EditorSelectionUtils.isEqual(collapsed, expected)).toBe(true);
+});

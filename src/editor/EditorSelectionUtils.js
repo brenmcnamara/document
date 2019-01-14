@@ -156,6 +156,42 @@ const EditorSelectionUtils = {
   },
 
   /**
+   * Collapse the selection to either the anchor or the focus of the selection.
+   *
+   * @param { EditorSelection } selection - The selection to collapse
+   *
+   * @param { string } collapseType - "to-anchor" to collapse to the anchor
+   *         node, "to-focus" to collapse to the focus node.
+   */
+  collapse(
+    selection: EditorSelection,
+    collapseType: 'to-anchor' | 'to-focus',
+  ): EditorSelection {
+    switch (collapseType) {
+      case 'to-anchor':
+        return {
+          anchorNode: selection.anchorNode,
+          anchorOffset: selection.anchorOffset,
+          focusNode: selection.anchorNode,
+          focusOffset: selection.anchorOffset,
+        };
+
+      case 'to-focus':
+        return {
+          anchorNode: selection.focusNode,
+          anchorOffset: selection.focusOffset,
+          focusNode: selection.focusNode,
+          focusOffset: selection.focusOffset,
+        };
+
+      default:
+        throw Error(
+          `collapseMode set to "${collapseType}". Must be either "to-anchor" or "to-focus"`,
+        );
+    }
+  },
+
+  /**
    * Returns true if the selection is defined such that the anchor comes after
    * the focus.
    *
@@ -207,42 +243,6 @@ const EditorSelectionUtils = {
     );
 
     return { anchorNode, anchorOffset, focusNode, focusOffset };
-  },
-
-  /**
-   * Collapse the selection to either the anchor or the focus of the selection.
-   *
-   * @param { EditorSelection } selection - The selection to collapse
-   *
-   * @param { string } anchorOrFocus - "anchor" to collapse to the anchor node,
-   *        "focus" to collapse to the focus node.
-   */
-  collapse(
-    selection: EditorSelection,
-    anchorOrFocus: 'to-anchor' | 'to-focus',
-  ): EditorSelection {
-    switch (anchorOrFocus) {
-      case 'to-anchor':
-        return {
-          anchorNode: selection.anchorNode,
-          anchorOffset: selection.anchorOffset,
-          focusNode: selection.anchorNode,
-          focusOffset: selection.focusOffset,
-        };
-
-      case 'to-focus':
-        return {
-          anchorNode: selection.focusNode,
-          anchorOffset: selection.focusOffset,
-          focusNode: selection.focusNode,
-          focusOffset: selection.focusOffset,
-        };
-
-      default:
-        throw Error(
-          `anchorOrFocus set to "${anchorOrFocus}". Must be either "to-anchor" or "to-focus"`,
-        );
-    }
   },
 };
 
