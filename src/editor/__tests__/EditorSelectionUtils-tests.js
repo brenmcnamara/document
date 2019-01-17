@@ -458,3 +458,14 @@ test('isBackward is false for collapsed selections', () => {
   expect(EditorSelectionUtils.isBackward(collapsed1)).toBe(false);
   expect(EditorSelectionUtils.isBackward(collapsed2)).toBe(false);
 });
+
+test('cursorAtStart puts the selection cursor at the start of the document', () => {
+  const selection = EditorSelectionUtils.cursorAtStart(Tree1);
+  const expected = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.isEqual(selection, expected)).toBe(true);
+});
