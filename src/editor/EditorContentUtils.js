@@ -1,21 +1,38 @@
 /* @flow */
 
+import EditorNodeUtils from './EditorNodeUtils';
 import EditorSelectionUtils from './EditorSelectionUtils';
 
+import type { DocumentEditorNode } from './EditorNodeUtils';
 import type { EditorSelection } from './EditorSelectionUtils';
 
 export type EditorContent = {|
-  +html: HTMLElement,
-  +selection: EditorSelection,
+  +doc: DocumentEditorNode,
+  +sel: EditorSelection,
 |};
 
-export default {
+const EditorContentUtils = {
   /**
-   * Create an empty content object.
+   * Creates an empty editor content with the text at the start.
    */
   createEmptyContent(): EditorContent {
-    const html = document.createElement('span');
-    const selection = EditorSelectionUtils.cursorAtStart(html);
-    return { html, selection };
+    const doc = EditorNodeUtils.createEmptyDocument();
+    const sel = EditorSelectionUtils.cursorAtStart(doc);
+    return { doc, sel };
+  },
+
+  /**
+   * Adds a character where the cursor is, deletes all characters that are
+   * selected, and moves the cursor immediately past the character that was
+   * added.
+   *
+   * @param { EditorContent } content - The editor content
+   *
+   * @param { string } text - The text to add
+   */
+  addText(content: EditorContent, text: string): EditorContent {
+    throw Error('IMPLEMENT ME');
   },
 };
+
+export default EditorContentUtils;

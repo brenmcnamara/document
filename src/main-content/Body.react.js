@@ -10,13 +10,12 @@ import styles from './styles.css';
 
 import { of } from 'rxjs';
 
-import type { EditorAction } from '../editor/EditorActionUtils';
 import type { EditorInput, EditorOutput } from '../editor/Editor.react';
 
 export type Props = {};
 
 export default class Body extends React.Component<Props> {
-  _onEditorInputReady = (input: EditorInput): EditorOutput => {
+  _onInputReady = (input: EditorInput): EditorOutput => {
     return of(EditorContentUtils.createEmptyContent());
   };
 
@@ -27,7 +26,10 @@ export default class Body extends React.Component<Props> {
         <div className={styles.contentContainer}>
           <TitleBar />
           <div className={styles.editorContainer}>
-            <Editor onInputReady={this._onEditorInputReady} />
+            <Editor
+              allowOutputToComplete={true}
+              onInputReady={this._onInputReady}
+            />
           </div>
         </div>
       </div>
