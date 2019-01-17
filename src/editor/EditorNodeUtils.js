@@ -83,6 +83,7 @@ export type TextEditorNode = EditorNodeStub<'text'> & { +text: string };
 
 export type EditorNodeStub<TName: string> = {
   +childNodes: Array<EditorNode>,
+  +id: string,
   +nodeName: TName,
   +parentNode: EditorNode | null,
 };
@@ -125,6 +126,23 @@ const EditorNodeUtils = {
         throw Error('parentNode and childNodes structures do not agree');
       }
     }
+  },
+
+  /**
+   * Create an empty document node.
+   */
+  createEmptyDocument(): DocumentEditorNode {
+    const root = { childNodes: [], id: '1', nodeName: 'doc', parentNode: null };
+    const text = {
+      childNodes: [],
+      id: '2',
+      nodeName: 'text',
+      parentNode: root,
+      text: 'Hello World!',
+    };
+
+    root.childNodes.push(text);
+    return root;
   },
 
   /**
@@ -203,7 +221,7 @@ const EditorNodeUtils = {
     // order is important: we need to assume that if a node is being enumerated
     // then its parent has already been enumerated. The dfsInfixIterable gives
     // us this gaurantee.
-    for (let next of EditorTreeAlgos.dfsInfixIterable(doc)) {
+    for (let next of EditorNodeUtils.dfsInfixIterable(doc)) {
       // NOTE: The parent does not exist for the root node.
       const parentCopy =
         next.parentNode &&
@@ -297,7 +315,7 @@ const EditorNodeUtils = {
    */
   nextAdjacentLeaf(node: EditorNode): EditorNode | null {
     return EditorTreeAlgos.nextAdjacentLeaf(node);
-    },
+  },
 
   /**
    * Find the previous adjacent leaf in the tree. Returns null if a node has no
@@ -311,6 +329,16 @@ const EditorNodeUtils = {
    */
   prevAdjacentLeaf(node: EditorNode): EditorNode | null {
     return EditorTreeAlgos.prevAdjacentLeaf(node);
+  },
+
+  /**
+   * Create an iterable object for iterating through the descendants of a node
+   * using an infix depth-first-search.
+   *
+   * @param { EditorNode } root - The root node to start the depth first search
+   */
+  dfsInfixIterable(root: EditorNode) {
+    return EditorTreeAlgos.dfsInfixIterable(root);
   },
 };
 

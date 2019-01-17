@@ -4,27 +4,30 @@ import type { DocumentEditorNode } from './EditorNodeUtils';
 
 function createTree1(): DocumentEditorNode {
   // Create the nodes.
-  const root = { childNodes: [], nodeName: 'doc', parentNode: null };
+  const root = { childNodes: [], id: '1', nodeName: 'doc', parentNode: null };
 
-  const h1 = { childNodes: [], nodeName: 'h1', parentNode: root };
+  const h1 = { childNodes: [], id: '2', nodeName: 'h1', parentNode: root };
   const h1_text = {
     childNodes: [],
+    id: '3',
     nodeName: 'text',
     parentNode: h1,
     text: 'Header 1',
   };
 
-  const h2 = { childNodes: [], nodeName: 'h2', parentNode: root };
+  const h2 = { childNodes: [], id: '4', nodeName: 'h2', parentNode: root };
   const h2_text = {
     childNodes: [],
+    id: '5',
     nodeName: 'text',
     parentNode: h2,
     text: 'Header 2',
   };
 
-  const p = { childNodes: [], nodeName: 'p', parentNode: root };
+  const p = { childNodes: [], id: '6', nodeName: 'p', parentNode: root };
   const p_text = {
     childNodes: [],
+    id: '7',
     nodeName: 'text',
     parentNode: p,
     text: 'paragraph',
@@ -41,10 +44,11 @@ function createTree1(): DocumentEditorNode {
 
 function createTree2(): DocumentEditorNode {
   // Create the nodes
-  const root = { childNodes: [], nodeName: 'doc', parentNode: null };
-  const h1 = { childNodes: [], nodeName: 'h1', parentNode: root };
+  const root = { childNodes: [], id: '1', nodeName: 'doc', parentNode: null };
+  const h1 = { childNodes: [], id: '2', nodeName: 'h1', parentNode: root };
   const h1_text = {
     childNodes: [],
+    id: '3',
     nodeName: 'text',
     parentNode: h1,
     text: 'Header',

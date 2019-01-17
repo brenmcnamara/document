@@ -1,13 +1,24 @@
 /* @flow */
 
-export type EditorContent = {};
+import EditorNodeUtils from './EditorNodeUtils';
+import EditorSelectionUtils from './EditorSelectionUtils';
+
+import type { DocumentEditorNode } from './EditorNodeUtils';
+import type { EditorSelection } from './EditorSelectionUtils';
+
+export type EditorContent = {|
+  +doc: DocumentEditorNode,
+  +sel: EditorSelection,
+|};
 
 const EditorContentUtils = {
   /**
    * Creates an empty editor content with the text at the start.
    */
   createEmptyContent(): EditorContent {
-    return {};
+    const doc = EditorNodeUtils.createEmptyDocument();
+    const sel = EditorSelectionUtils.cursorAtStart(doc);
+    return { doc, sel };
   },
 };
 

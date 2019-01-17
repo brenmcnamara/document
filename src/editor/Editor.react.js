@@ -7,6 +7,7 @@ import Keys from './Keys';
 
 import invariant from 'invariant';
 import nullthrows from 'nullthrows';
+import setEditorContent from './setEditorContent';
 
 import { Observable } from 'rxjs';
 
@@ -39,7 +40,20 @@ export default class Editor extends React.Component<Props> {
   //
   // ---------------------------------------------------------------------------
 
-  _onOutputNext = (content: EditorContent): void => {};
+  _onOutputNext = (content: EditorContent): void => {
+    const { current } = this._editorRef;
+    if (!current) {
+      // Assuming DOM is not yet ready because the component has either been
+      // unmounted or has not yet been mounted. Need to update the content
+      // instance variable and let the content get updated after the component
+      // is mounted.
+      this._editorContent = content;
+      return;
+    }
+
+    setEditorContent(current, this._editorContent);
+    this._editorContent = content;
+  };
 
   _onOutputError = (error: any): void => {
     throw error;
@@ -129,7 +143,13 @@ export default class Editor extends React.Component<Props> {
     });
   }
 
-  componentDidMount(): void {}
+  componentDidMount(): void {
+    if (!this._editorRef.current) {
+      console.warn('Editor has mounted but editor node is not mounted');
+      return;
+    }
+    setEditorContent(this._editorRef.current, this._editorContent);
+  }
 
   componentWillUnmount(): void {
     this._outputSubscription && this._outputSubscription.unsubscribe();
@@ -171,8 +191,6 @@ export default class Editor extends React.Component<Props> {
       />
     );
   }
-
-  _setContent(content: EditorContent): void {}
 
   _hasFocus(): boolean {
     return Boolean(
