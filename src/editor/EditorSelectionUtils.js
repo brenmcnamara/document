@@ -1,11 +1,13 @@
 /* @flow */
 
 import EditorNodeUtils from './EditorNodeUtils';
+import IterUtils from './iter-utils/IterUtils';
 
 import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 
 import type { EditorNode } from './EditorNodeUtils';
+import type { IndexPath } from './tree-algos/TreeAlgos';
 
 export type EditorSelection = {|
   +anchorNode: EditorNode,
@@ -13,6 +15,11 @@ export type EditorSelection = {|
   +focusNode: EditorNode,
   +focusOffset: number,
 |};
+
+export type SelectionStatus =
+  | 'NOT_SELECTED'
+  | 'PARTIALLY_SELECTED'
+  | 'FULLY_SELECTED';
 
 const EditorSelectionUtils = {
   /**
@@ -230,6 +237,142 @@ const EditorSelectionUtils = {
   },
 
   /**
+   * Get the selection status of a particular node in the document. The
+   * selection status can be one of the following:
+   *
+   * - NOT_SELECTED: This node is not selected by the selection
+   * - PARTIALLY_SELECTED: Part of the nodes content is selected
+   * - FULLY_SELECTED: The entire node is selected.
+   *
+   * @param { EditorSelection } selection - The editor selection to compare.
+   *
+   * @param { EditorNode } node - The editor node to check
+   *
+   * @throws { Error } If the node is not in the same document as the selection
+   */
+  selectionStatus(
+    selection: EditorSelection,
+    node: EditorNode,
+  ): SelectionStatus {
+    const norm = EditorSelectionUtils.norm(selection);
+    // Collapsed nodes are not selected.
+    if (
+      norm.anchorNode === norm.focusNode &&
+      norm.anchorOffset === norm.focusOffset
+    ) {
+      return 'NOT_SELECTED';
+    }
+
+    const docNode = EditorNodeUtils.documentNode(norm.anchorNode);
+    const anchorIP = EditorNodeUtils.indexPathToNode(docNode, norm.anchorNode);
+    const focusIP = EditorNodeUtils.indexPathToNode(docNode, norm.focusNode);
+    const isBackward = EditorSelectionUtils.isBackward(norm);
+
+    const startNode = isBackward ? norm.focusNode : norm.anchorNode;
+    const startOffset = isBackward ? norm.focusOffset : norm.anchorOffset;
+
+    const endNode = isBackward ? norm.anchorNode : norm.focusNode;
+    const endOffset = isBackward ? norm.anchorOffset : norm.focusOffset;
+
+    const startIP = isBackward ? focusIP : anchorIP;
+    const endIP = isBackward ? anchorIP : focusIP;
+
+    // To determine the selection status of a node, we need to check the
+    // selection status of all its children.
+    let foundFullSelectedLeaf = false;
+    let foundNoSelectedLeaf = false;
+
+    let isIteratingStartNode = false;
+    let didIterateStartNode = false;
+
+    let isIteratingEndNode = false;
+    let didIterateEndNode = false;
+
+    let isFirstIteration = true;
+    let isInSelectionRange = false;
+
+    for (let leaf of EditorNodeUtils.leafIterable(node)) {
+      // PART 1: UPDATE ALL THE HOUSE-KEEPING VARIABLES. These are the variables
+      // that are used to keep track of where we are in the tree with respect
+      // to the selected nodes.
+      if (isFirstIteration) {
+        const leafIP = EditorNodeUtils.indexPathToNode(docNode, leaf);
+
+        isFirstIteration = false;
+        isIteratingStartNode = leaf === startNode;
+        isIteratingEndNode = leaf === endNode;
+        isInSelectionRange =
+          isIteratingStartNode ||
+          isIteratingEndNode ||
+          (isIPBefore(startIP, leafIP) && isIPBefore(leafIP, endIP));
+      } else {
+        didIterateStartNode = didIterateStartNode || isIteratingStartNode;
+        isIteratingStartNode = false;
+        didIterateEndNode = didIterateEndNode || isIteratingEndNode;
+        isIteratingEndNode = false;
+
+        isInSelectionRange =
+          // If we are already in the selection range, need to check if we are
+          // iterating a node that is no longer in the selection range.
+          (isInSelectionRange && !didIterateEndNode) ||
+          // If we are not yet in the selection range, need to check if we
+          // are iterating a node that is now in the selection range.
+          (!isInSelectionRange && isIteratingStartNode);
+      }
+
+      // If, in previous iterations, we found some nodes that were not selected
+      // and some nodes that were fully selected, this is a partial selection.
+      if (foundNoSelectedLeaf && foundFullSelectedLeaf) {
+        return 'PARTIALLY_SELECTED';
+      }
+
+      // PART 2: UPDATE THE SELECTION STATUS VARIABLES. Need to figure out the
+      // selection status of the current node that is being iterated.
+      if (!isInSelectionRange) {
+        foundNoSelectedLeaf = true;
+        continue;
+      }
+
+      // NOTE: Checking for full selection of a node is a bit complex.
+      // Breaking this check up in separate else-if clauses for clarity.
+
+      // CLAUSE 1: We are not currently iterating the anchor or focus nodes,
+      // so we must be somewhere in between the two nodes.
+      if (!isIteratingStartNode && !isIteratingEndNode) {
+        foundFullSelectedLeaf = true;
+
+        // CLAUSE 2: The start, end, and leaf are all the same node.
+      } else if (isIteratingStartNode && isIteratingEndNode) {
+        // Check if this is a partial selection.
+        if (startOffset !== 0 || endOffset !== EditorNodeUtils.len(endNode)) {
+          return 'PARTIALLY_SELECTED';
+        }
+        foundFullSelectedLeaf = true;
+
+        // CLAUSE 3: We are iterating the start node.
+      } else if (isIteratingStartNode) {
+        if (startOffset !== 0) {
+          return 'PARTIALLY_SELECTED';
+        }
+        foundFullSelectedLeaf = true;
+      } else if (isIteratingEndNode) {
+        if (endOffset !== EditorNodeUtils.len(endNode)) {
+          return 'PARTIALLY_SELECTED';
+        }
+        foundFullSelectedLeaf = true;
+      }
+    }
+
+    if (foundFullSelectedLeaf && foundNoSelectedLeaf) {
+      return 'PARTIALLY_SELECTED';
+    } else if (foundFullSelectedLeaf) {
+      return 'FULLY_SELECTED';
+    } else {
+      return 'NOT_SELECTED';
+    }
+  },
+
+  /**
    * Create a selection element that puts the cursor at the start of a
    * partcular node.
    *
@@ -325,6 +468,26 @@ function _shiftCharNodeAndOffset(
   n: number,
 ): { node: EditorNode, offset: number } {
   throw Error('IMPLEMENT ME!');
+}
+
+function isIPBefore(ip1: IndexPath, ip2: IndexPath): boolean {
+  const iter1 = IterUtils.iterFromIterable(ip1);
+  const iter2 = IterUtils.iterFromIterable(ip2);
+  const zipped = IterUtils.zipExhaust(iter1, iter2);
+
+  let result = zipped.next();
+  while (!result.done) {
+    const [index1, index2] = result.value;
+    if (typeof index1 !== 'number') {
+      return true;
+    } else if (typeof index2 !== 'number') {
+      return false;
+    } else if (index1 !== index2) {
+      return index1 < index2;
+    }
+  }
+  // They are the same index path.
+  return false;
 }
 
 export default EditorSelectionUtils;

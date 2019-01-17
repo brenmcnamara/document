@@ -129,20 +129,23 @@ const EditorNodeUtils = {
   },
 
   /**
+   * The length of a node. This is the length of text for a leaf node and the
+   * number of children otherwise.
+   */
+  len(node: EditorNode): number {
+    return node.nodeName === 'text' ? node.text.length : node.childNodes.length;
+  },
+
+  /**
    * Create an empty document node.
    */
   createEmptyDocument(): DocumentEditorNode {
-    const root = { childNodes: [], id: '1', nodeName: 'doc', parentNode: null };
-    const text = {
+    return {
       childNodes: [],
-      id: '2',
-      nodeName: 'text',
-      parentNode: root,
-      text: 'Hello World!',
+      id: '1',
+      nodeName: 'doc',
+      parentNode: null,
     };
-
-    root.childNodes.push(text);
-    return root;
   },
 
   /**
@@ -339,6 +342,17 @@ const EditorNodeUtils = {
    */
   dfsInfixIterable(root: EditorNode) {
     return EditorTreeAlgos.dfsInfixIterable(root);
+  },
+
+  /**
+   * Create an iterable object for iterating through the leaf nodes of a node.
+   * This will iterate the leaf nodes in order from left to right. If the node
+   * is a leaf node, it will iterate itself.
+   *
+   * @param { EditorNode } node - The node to iterate leaf nodes from
+   */
+  leafIterable(root: EditorNode) {
+    return EditorTreeAlgos.leafIterable(root);
   },
 };
 

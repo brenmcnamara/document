@@ -25,7 +25,8 @@ const IterUtils = {
    * TODO: DOCUMENT ME
    */
   filter<T>(iterator: Iterator<T>, predicate: T => boolean): Iterator<T> {
-    return {
+    // $FlowFixMe - Need to figure out why this is incorrect.
+    const filteredIterator: Iterator<T> = {
       next: () => {
         let result = iterator.next();
         while (!result.done && !predicate(result.value)) {
@@ -34,6 +35,7 @@ const IterUtils = {
         return result;
       },
     };
+    return filteredIterator;
   },
 
   /**

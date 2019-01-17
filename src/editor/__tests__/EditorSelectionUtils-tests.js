@@ -459,6 +459,87 @@ test('isBackward is false for collapsed selections', () => {
   expect(EditorSelectionUtils.isBackward(collapsed2)).toBe(false);
 });
 
+test('selectionStatus identifies nodes that are not selected', () => {
+  const selection = {
+    anchorNode: getFirstLeaf(Tree1),
+    anchorOffset: 0,
+    focusNode: getFirstLeaf(Tree1),
+    focusOffset: 1,
+  };
+  expect(
+    EditorSelectionUtils.selectionStatus(selection, getLastLeaf(Tree1)),
+  ).toBe('NOT_SELECTED');
+});
+
+test('selectionStatus marks node with collapsed cursor as not selected', () => {
+  const selection = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.selectionStatus(selection, Tree1)).toBe(
+    'NOT_SELECTED',
+  );
+});
+
+test('selectionStatus marks node with selection ending at the beginning of the node as not selected', () => {
+  const selection = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  expect(
+    EditorSelectionUtils.selectionStatus(selection, Tree1.childNodes[1]),
+  ).toBe('NOT_SELECTED');
+});
+
+test('selectionStatus marks every node as fully selected when the entire document is selected', () => {
+  const selection = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: Tree1.childNodes.length,
+  };
+  for (let node of EditorNodeUtils.dfsInfixIterable(Tree1)) {
+    expect(EditorSelectionUtils.selectionStatus(selection, node)).toBe(
+      'FULLY_SELECTED',
+    );
+  }
+});
+
+test('selectionStatus marks leaf node as partially selected', () => {
+  const leaf = getFirstLeaf(Tree1);
+  const selection = {
+    anchorNode: leaf,
+    anchorOffset: 0,
+    focusNode: leaf,
+    focusOffset: 1,
+  };
+  expect(EditorSelectionUtils.selectionStatus(selection, leaf)).toBe(
+    'PARTIALLY_SELECTED',
+  );
+});
+
+test('selectionStatus marks all parents of a partially selected leaf to be partially selected', () => {
+  const leaf = getFirstLeaf(Tree1);
+  const selection = {
+    anchorNode: leaf,
+    anchorOffset: 0,
+    focusNode: leaf,
+    focusOffset: 1,
+  };
+
+  let node = leaf;
+  while (node) {
+    expect(EditorSelectionUtils.selectionStatus(selection, node)).toBe(
+      'PARTIALLY_SELECTED',
+    );
+    node = node.parentNode;
+  }
+});
+
 test('cursorAtStart puts the selection cursor at the start of the document', () => {
   const selection = EditorSelectionUtils.cursorAtStart(Tree1);
   const expected = {

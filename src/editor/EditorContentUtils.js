@@ -20,6 +20,19 @@ const EditorContentUtils = {
     const sel = EditorSelectionUtils.cursorAtStart(doc);
     return { doc, sel };
   },
+
+  /**
+   * Adds a character where the cursor is, deletes all characters that are
+   * selected, and moves the cursor immediately past the character that was
+   * added.
+   *
+   * @param { EditorContent } content - The editor content
+   *
+   * @param { string } text - The text to add
+   */
+  addText(content: EditorContent, text: string): EditorContent {
+    throw Error('IMPLEMENT ME');
+  },
 };
 
 export default EditorContentUtils;
