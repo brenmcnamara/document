@@ -24,7 +24,7 @@ export default function setEditorContent(
   content: EditorContent,
 ): void {
   setEditorNode(parentOfHTMLDocument, content.doc);
-  setEditorSelection(parentOfHTMLDocument.childNodes[0], content.sel);
+  setEditorSelection(parentOfHTMLDocument, content.sel);
 }
 
 /**
@@ -39,7 +39,6 @@ function setEditorNode(
   parentOfHTMLDocument: Node,
   doc: DocumentEditorNode,
 ): void {
-  console.log('setting editor content');
   const htmlDocument = createDOMNode(doc);
   const nodeIDToDOMNode = { [doc.id]: htmlDocument };
 
@@ -81,7 +80,8 @@ function setEditorNode(
  * In modern non-IE browsers, we can support both forward and backward
  * selections.
  *
- * @param { Node } htmlDocument - The root html node of the document.
+ * @param { Node } parentOfHTMLDocument - The parent of the html node
+ *        representing the document.
  *
  * @param { EditorSelection } selection - The selection to set on the DOM.
  *
@@ -91,9 +91,11 @@ function setEditorNode(
  * @throw { Error } If trying to set backwards selection on browser that does
  *        not support backwards selection.
  */
-function setEditorSelection(htmlDocument: Node, sel: EditorSelection): void {
-  // TODO: What happens when the node is not focused??
-
+function setEditorSelection(
+  parentOfHTMLDocument: Node,
+  sel: EditorSelection,
+  forceFocus: boolean = false,
+): void {
   // TODO: Not sure when this will happen, need to look more into when the
   // "getSelection" function returns null.
   const nativeSel = global.getSelection();
@@ -102,12 +104,18 @@ function setEditorSelection(htmlDocument: Node, sel: EditorSelection): void {
     return;
   }
 
+  // Check if we are focused on the document editor before changing the
+  // selection.
+  if (document.activeElement !== parentOfHTMLDocument && !forceFocus) {
+    return;
+  }
+
   const {
     anchorNode,
     anchorOffset,
     focusNode,
     focusOffset,
-  } = getDOMSelectionInfo(htmlDocument, sel);
+  } = getDOMSelectionInfo(parentOfHTMLDocument, sel);
 
   // It's possible that the editor has been removed from the DOM (or was never
   // in the DOM) but our selection code doesn't know it yet. Forcing selection
@@ -178,12 +186,13 @@ function createDOMNode(editorNode: EditorNode): Node {
  * Get the native DOM elements and offsets for the selection on a particular
  * html document.
  *
- * @param { Node } htmlDocument - The root html node of the document.
+ * @param { Node } parentOfHTMLDocument - The parent of the html node
+ *        representing the document.
  *
  * @param { EditorSelection } sel - The editor selection
  */
 function getDOMSelectionInfo(
-  htmlDocument: Node,
+  parentOfHTMLDocument: Node,
   sel: EditorSelection,
 ): {
   anchorNode: Node,
@@ -204,6 +213,9 @@ function getDOMSelectionInfo(
     documentNode,
     sel.focusNode,
   );
+
+  // NOTE: Assuming html document has been mounted at this point.
+  const htmlDocument = nullthrows(parentOfHTMLDocument.childNodes[0]);
 
   const anchorNode = DOMUtils.nodeAtIndexPath(htmlDocument, anchorIndexPath);
   const focusNode = DOMUtils.nodeAtIndexPath(htmlDocument, focusIndexPath);

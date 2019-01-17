@@ -19,6 +19,7 @@ export type EditorInput = rxjs$Observable<EditorAction>;
 export type EditorOutput = rxjs$Observable<EditorContent>;
 
 export type Props = {
+  allowOutputToComplete?: boolean,
   className?: string,
   onInputReady: (input: EditorInput) => EditorOutput,
   readOnly?: boolean,
@@ -60,7 +61,14 @@ export default class Editor extends React.Component<Props> {
   };
 
   _onOutputComplete = (): void => {
-    throw Error('Editor outputObservable should never be complete');
+    if (this.props.allowOutputToComplete) {
+      return;
+    }
+    console.warn(
+      'The output observable completed. This means that the editor can no ' +
+        'longer take any changes. If this is intended, please set the ' +
+        'prop "allowOutputToComplete" to true',
+    );
   };
 
   // ---------------------------------------------------------------------------
@@ -136,11 +144,11 @@ export default class Editor extends React.Component<Props> {
 
   componentWillMount(): void {
     const output = this.props.onInputReady(this._input);
-    this._outputSubscription = output.subscribe({
-      onNext: this._onOutputNext,
-      onError: this._onOutputError,
-      onComplete: this._onOutputComplete,
-    });
+    this._outputSubscription = output.subscribe(
+      this._onOutputNext,
+      this._onOutputError,
+      this._onOutputComplete,
+    );
   }
 
   componentDidMount(): void {

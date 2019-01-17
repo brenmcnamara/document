@@ -26,7 +26,10 @@ export default class Body extends React.Component<Props> {
         <div className={styles.contentContainer}>
           <TitleBar />
           <div className={styles.editorContainer}>
-            <Editor onInputReady={this._onInputReady} />
+            <Editor
+              allowOutputToComplete={true}
+              onInputReady={this._onInputReady}
+            />
           </div>
         </div>
       </div>
