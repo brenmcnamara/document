@@ -24,6 +24,21 @@ const IterUtils = {
   /**
    * TODO: DOCUMENT ME
    */
+  filter<T>(iterator: Iterator<T>, predicate: T => boolean): Iterator<T> {
+    return {
+      next: () => {
+        let result = iterator.next();
+        while (!result.done && !predicate(result.value)) {
+          result = iterator.next();
+        }
+        return result;
+      },
+    };
+  },
+
+  /**
+   * TODO: DOCUMENT ME
+   */
   first<T>(iterator: Iterator<T>): ?T {
     const result = iterator.next();
     return result.done ? undefined : result.value;

@@ -443,3 +443,30 @@ test('nodeAtIndexPath throws error when passing an invalid index path', () => {
   const root = createNode('root').withParent(null);
   expect(() => AlgosWithParentRef.nodeAtIndexPath(root, [0])).toThrow();
 });
+
+test('leafIterable iterates the leaf nodes of a node', () => {
+  const root = createNode('root').withParent(null);
+  const child1 = createNode('child1').withParent(root);
+  const child2 = createNode('child2').withParent(root);
+  const child3 = createNode('child3').withParent(root);
+  const child1_1 = createNode('child1_1').withParent(child1);
+  const child1_2 = createNode('child1_2').withParent(child1);
+  const child2_1 = createNode('child2_1').withParent(child2);
+  const child2_2 = createNode('child2_2').withParent(child2);
+
+  const leafNodes1 = Array.from(AlgosWithParentRef.leafIterable(root));
+  expect(leafNodes1).toEqual([child1_1, child1_2, child2_1, child2_2, child3]);
+
+  const leafNodes2 = Array.from(AlgosWithoutParentRef.leafIterable(root));
+  expect(leafNodes2).toEqual([child1_1, child1_2, child2_1, child2_2, child3]);
+});
+
+test('leafIterable iterates a single node if it is a leaf node', () => {
+  const root = createNode('root').withParent(null);
+
+  const leafNodes1 = Array.from(AlgosWithParentRef.leafIterable(root));
+  expect(leafNodes1).toEqual([root]);
+
+  const leafNodes2 = Array.from(AlgosWithoutParentRef.leafIterable(root));
+  expect(leafNodes2).toEqual([root]);
+});

@@ -435,6 +435,22 @@ export default class TreeAlgos<TNode> {
     return IterUtils.createIterable(iteratorFn);
   }
 
+  /**
+   * Create an iterable object for iterating through the leaf nodes of a node.
+   * This will iterate the leaf nodes in order from left to right. If the node
+   * is a leaf node, it will iterate itself.
+   *
+   * @param { TNode } node - The node to iterate leaf nodes from
+   */
+  static leafIterable(root: TNode): Iterable<TNode> {
+    const iteratorFn: () => Iterator<TNode> = () => {
+      const dfsInfixIterable = this.dfsInfixIterable(root);
+      const iterator = IterUtils.iterFromIterable(dfsInfixIterable);
+      return IterUtils.filter(iterator, node => this.isLeaf(node));
+    };
+    return IterUtils.createIterable(iteratorFn);
+  }
+
   static _pathToChildUsingParentNodes(
     fromNode: TNode,
     toNode: TNode,
