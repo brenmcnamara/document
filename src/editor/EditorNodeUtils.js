@@ -246,6 +246,20 @@ const EditorNodeUtils = {
   },
 
   /**
+   * Find the least common ancesor node of two nodes. Returns null if the two
+   * trees are not in the same tree.
+   *
+   * @throws { Error } If the "parentNode" method is unimplemented.
+   *
+   * @param { EditorNode } node1 - The first tree node
+   *
+   * @param { EditorNode } node2 - The second tree node
+   */
+  leastCommonAncestor(node1: EditorNode, node2: EditorNode): EditorNode | null {
+    return EditorTreeAlgos.leastCommonAncestor(node1, node2);
+  },
+
+  /**
    * Calculates the index path from a node to another.
    *
    * @throws { Error } If no path exists to the node
