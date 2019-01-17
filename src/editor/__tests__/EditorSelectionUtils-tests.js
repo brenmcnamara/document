@@ -237,7 +237,7 @@ test('isEqual returns true for a selection and its norm', () => {
   expect(EditorSelectionUtils.isEqual(all, normAll)).toBe(true);
 });
 
-test('isCollapsed returns true for normalized, collapsed selections', ()=> {
+test('isCollapsed returns true for normalized, collapsed selections', () => {
   const leaf = getFirstLeaf(Tree1);
   const selection = {
     anchorNode: leaf,
@@ -248,7 +248,7 @@ test('isCollapsed returns true for normalized, collapsed selections', ()=> {
   expect(EditorSelectionUtils.isCollapsed(selection)).toBe(true);
 });
 
-test('isCollapsed returns false for normalized, non-collapsed selections', ()=> {
+test('isCollapsed returns false for normalized, non-collapsed selections', () => {
   const leaf = getFirstLeaf(Tree1);
   const selection = {
     anchorNode: leaf,
@@ -389,4 +389,72 @@ test('collapse collapses backwards selection to the end of the document', () => 
     focusOffset: Tree1.childNodes.length,
   };
   expect(EditorSelectionUtils.isEqual(collapsed, expected)).toBe(true);
+});
+
+test('isBackward works with anchor and focus being the same node', () => {
+  const forward = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 1,
+  };
+  const backward = {
+    anchorNode: Tree2,
+    anchorOffset: 1,
+    focusNode: Tree2,
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.isBackward(forward)).toBe(false);
+  expect(EditorSelectionUtils.isBackward(backward)).toBe(true);
+});
+
+test('isBackward works with anchor and focus being sibling nodes', () => {
+  const forward = {
+    anchorNode: Tree1.childNodes[0],
+    anchorOffset: 0,
+    focusNode: Tree1.childNodes[1],
+    focusOffset: 0,
+  };
+  const backward = {
+    anchorNode: Tree1.childNodes[1],
+    anchorOffset: 0,
+    focusNode: Tree1.childNodes[0],
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.isBackward(forward)).toBe(false);
+  expect(EditorSelectionUtils.isBackward(backward)).toBe(true);
+});
+
+test('isBackward works with anchor and focus being at different depths of the tree', () => {
+  const forward = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: getLastLeaf(Tree1),
+    focusOffset: 0,
+  };
+  const backward = {
+    anchorNode: Tree1,
+    anchorOffset: 1,
+    focusNode: getFirstLeaf(Tree1),
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.isBackward(forward)).toBe(false);
+  expect(EditorSelectionUtils.isBackward(backward)).toBe(true);
+});
+
+test('isBackward is false for collapsed selections', () => {
+  const collapsed1 = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: Tree1,
+    focusOffset: 0,
+  };
+  const collapsed2 = {
+    anchorNode: Tree1,
+    anchorOffset: 0,
+    focusNode: getFirstLeaf(Tree1),
+    focusOffset: 0,
+  };
+  expect(EditorSelectionUtils.isBackward(collapsed1)).toBe(false);
+  expect(EditorSelectionUtils.isBackward(collapsed2)).toBe(false);
 });

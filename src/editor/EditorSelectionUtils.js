@@ -3,6 +3,7 @@
 import EditorNodeUtils from './EditorNodeUtils';
 
 import invariant from 'invariant';
+import nullthrows from 'nullthrows';
 
 import type { EditorNode } from './EditorNodeUtils';
 
@@ -27,8 +28,10 @@ const EditorSelectionUtils = {
   },
 
   /**
-   * Validate the selection. If validation fails, an error is raised. A valid
-   * selection has the following properties:
+   * Validate the selection. If validation fails, an error is raised. Note that
+   * a selection is assumed to be valid for all selection utility functions
+   * below. If a selection is not valid, then the function will have undefined
+   * behavior. A valid selection has the following properties:
    *
    *  - The anchorNode and focusNode properties are refering to nodes in the
    *    same document
@@ -198,7 +201,32 @@ const EditorSelectionUtils = {
    * @param { EditorSelection } selection - The selection object
    */
   isBackward(selection: EditorSelection): boolean {
-    throw Error('NOT IMPLEMENTED');
+    const norm = EditorSelectionUtils.norm(selection);
+    if (norm.anchorNode === norm.focusNode) {
+      return norm.anchorOffset > norm.focusOffset;
+    }
+
+    const lca = nullthrows(
+      EditorNodeUtils.leastCommonAncestor(norm.anchorNode, norm.focusNode),
+    );
+
+    // NOTE: We already checked to make sure the anchor and focus nodes are
+    // not the same node. We also know that, because the anchorNode and
+    // focusNode come from the norm of the selection, they are both leaf nodes
+    // and neither node is a sub-tree of the other. We also know that, by
+    // definition of leastCommonAncestor, 1 child of the lca contains the
+    // anchorNode and 1 child of the lca contains the focusNode, and they are
+    // necessarily different. Therefore, all we need to do is figure out if
+    // the node containing the focusNode comes earlier in the tree than the
+    // node containing the anchorNode.
+    for (let child of lca.childNodes) {
+      if (EditorNodeUtils.containsNode(child, norm.focusNode)) {
+        return true;
+      } else if (EditorNodeUtils.containsNode(child, norm.anchorNode)) {
+        return false;
+      }
+    }
+    throw Error('The structure of the document tree is corrupt');
   },
 
   /**
