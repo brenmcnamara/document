@@ -690,26 +690,6 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-<<<<<<< HEAD
-=======
-"@nine-point/foundation@^1.0.5", "@nine-point/foundation@^1.0.9":
-  version "1.0.15"
-  resolved "https://registry.yarnpkg.com/@nine-point/foundation/-/foundation-1.0.15.tgz#ead64b5236d6d2fad3fa7451b620873be3efb62b"
-  dependencies:
-    invariant "^2.2.4"
-    nullthrows "^1.1.0"
-    tcomb-validation "^3.4.1"
-    uuid "^3.3.2"
-
-"@nine-point/typeahead@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@nine-point/typeahead/-/typeahead-1.0.0.tgz#1090bf0c8be5e4dff6964ac00e035cf15fc66102"
-  dependencies:
-    "@nine-point/foundation" "^1.0.5"
-    invariant "^2.2.4"
-    nullthrows "^1.1.0"
-
->>>>>>> upstream/master
 "@webassemblyjs/ast@1.7.8":
   version "1.7.8"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.7.8.tgz#f31f480debeef957f01b623f27eabc695fa4fe8f"
