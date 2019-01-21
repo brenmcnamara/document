@@ -2,15 +2,18 @@
 
 import * as React from 'react';
 import ContentHeader from './ContentHeader.react';
-import Editor from '../editor/Editor.react';
-import EditorContentUtils from '../editor/EditorContentUtils';
+import Editor from '../editor-experimental/Editor.react';
+import EditorContentUtils from '../editor-experimental/EditorContentUtils';
 import TitleBar from './TitleBar.react';
 
 import styles from './styles.css';
 
 import { of } from 'rxjs';
 
-import type { EditorInput, EditorOutput } from '../editor/Editor.react';
+import type {
+  EditorInput,
+  EditorOutput,
+} from '../editor-experimental/Editor.react';
 
 export type Props = {};
 
