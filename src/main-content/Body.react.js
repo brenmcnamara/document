@@ -2,21 +2,25 @@
 
 import * as React from 'react';
 import ContentHeader from './ContentHeader.react';
-import Editor from '../editor/Editor.react';
-import EditorContentUtils from '../editor/EditorContentUtils';
 import TitleBar from './TitleBar.react';
 
 import styles from './styles.css';
 
-import { of } from 'rxjs';
-
-import type { EditorInput, EditorOutput } from '../editor/Editor.react';
+import { Editor, EditorState } from '../editor-draftjs/Editor.react';
 
 export type Props = {};
 
-export default class Body extends React.Component<Props> {
-  _onInputReady = (input: EditorInput): EditorOutput => {
-    return of(EditorContentUtils.createEmptyContent());
+type State = {
+  editorState: EditorState,
+};
+
+export default class Body extends React.Component<Props, State> {
+  state = {
+    editorState: EditorState.createEmpty(),
+  };
+
+  _onChangeEditorState = (editorState: EditorState): void => {
+    this.setState({ editorState });
   };
 
   render() {
@@ -27,8 +31,9 @@ export default class Body extends React.Component<Props> {
           <TitleBar />
           <div className={styles.editorContainer}>
             <Editor
-              allowOutputToComplete={true}
-              onInputReady={this._onInputReady}
+              editorState={this.state.editorState}
+              onChange={this._onChangeEditorState}
+              placeholder="Type something here..."
             />
           </div>
         </div>
