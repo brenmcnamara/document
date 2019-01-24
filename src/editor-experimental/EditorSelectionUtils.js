@@ -1,13 +1,13 @@
 /* @flow */
 
-import EditorNodeUtils from './EditorNodeUtils';
-import IterUtils from './iter-utils/IterUtils';
+import EditorNodeUtils from '../editor-node/EditorNodeUtils';
+import IterUtils from '../iter-utils/IterUtils';
 
 import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 
-import type { EditorNode } from './EditorNodeUtils';
-import type { IndexPath } from './tree-algos/TreeAlgos';
+import type { EditorNode } from '../editor-node/EditorNodeUtils';
+import type { IndexPath } from '../tree-algos/TreeAlgos';
 
 export type EditorSelection = {|
   +anchorNode: EditorNode,
