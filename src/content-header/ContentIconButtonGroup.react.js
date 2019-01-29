@@ -6,6 +6,9 @@ export type Props = {};
 
 export default class ContentIconButtonGroup extends React.Component<Props> {
   render() {
-    return <div className={styles.contentHeaderIconGroup} />;
+    return (
+      <div className={styles.contentHeaderIconGroup}>
+        {this.props.children}
+      </div>);
   }
 }
