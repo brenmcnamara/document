@@ -1,7 +1,7 @@
 /* @flow */
 
 import * as React from 'react';
-import ContentHeader from './ContentHeader.react';
+import ContentHeader from '../content-header/ContentHeader.react';
 import TitleBar from './TitleBar.react';
 
 import styles from './styles.css';
