@@ -1,12 +1,12 @@
 /* @flow */
 
-import IterUtils from './iter-utils/IterUtils';
-import TreeAlgos from './tree-algos/TreeAlgos';
+import IterUtils from '../iter-utils/IterUtils';
+import TreeAlgos from '../tree-algos/TreeAlgos';
 
 import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 
-import type { IndexPath } from './tree-algos/TreeAlgos';
+import type { IndexPath } from '../tree-algos/TreeAlgos';
 
 export type EditorNode =
   | BoldEditorNode

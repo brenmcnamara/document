@@ -1,8 +1,8 @@
 /* @flow */
 
-import TreeAlgos from './tree-algos/TreeAlgos';
+import TreeAlgos from '../tree-algos/TreeAlgos';
 
-import type { IndexPath } from './tree-algos/TreeAlgos';
+import type { IndexPath } from '../tree-algos/TreeAlgos';
 
 export default {
   /**

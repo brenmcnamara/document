@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { DocumentEditorNode } from './EditorNodeUtils';
+import type { DocumentEditorNode } from '../editor-node/EditorNodeUtils';
 
 function createTree1(): DocumentEditorNode {
   // Create the nodes.

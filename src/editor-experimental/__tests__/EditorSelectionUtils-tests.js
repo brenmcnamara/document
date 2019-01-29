@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 
-import EditorNodeUtils from '../EditorNodeUtils';
+import EditorNodeUtils from '../../editor-node/EditorNodeUtils';
 import EditorSelectionUtils from '../EditorSelectionUtils';
 
-import { Tree1, Tree2 } from '../TestEditorTrees';
+import { Tree1, Tree2 } from '../../editor-node/TestEditorTrees';
 
 function getFirstLeaf(node) {
   if (node.childNodes.length === 0) {

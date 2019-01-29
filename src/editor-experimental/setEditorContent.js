@@ -1,13 +1,16 @@
 /* @flow */
 
 import DOMUtils from './DOMUtils';
-import EditorNodeUtils from './EditorNodeUtils';
+import EditorNodeUtils from '../editor-node/EditorNodeUtils';
 import EditorSelectionUtils from './EditorSelectionUtils';
 
 import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 
-import type { DocumentEditorNode, EditorNode } from './EditorNodeUtils';
+import type {
+  DocumentEditorNode,
+  EditorNode,
+} from '../editor-node/EditorNodeUtils';
 import type { EditorContent } from './EditorContentUtils';
 import type { EditorSelection } from './EditorSelectionUtils';
 

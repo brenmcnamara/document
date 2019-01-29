@@ -1,9 +1,9 @@
 /* @flow */
 
-import EditorNodeUtils from './EditorNodeUtils';
+import EditorNodeUtils from '../editor-node/EditorNodeUtils';
 import EditorSelectionUtils from './EditorSelectionUtils';
 
-import type { DocumentEditorNode } from './EditorNodeUtils';
+import type { DocumentEditorNode } from '../editor-node/EditorNodeUtils';
 import type { EditorSelection } from './EditorSelectionUtils';
 
 export type EditorContent = {|
